@@ -1,269 +1,133 @@
+from __future__ import annotations
 
-from collections import namedtuple
+import logging
+from dataclasses import dataclass
 from datetime import date
+import re
 
 from wordgame_bot.attempt import AttemptParser
+from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
+from wordgame_bot.guess import GuessInfo, Guesses
 
 INCORRECT_GUESS_SCORE = 12
-MAX_TILES_PER_WORD = 9
-UNICODE_STRING_1 = '\ufe0f'
-UNICODE_STRING_2 = '\u20e3'
-COMPLETED_TILES = ('🟩🟩🟩🟩🟩', '⬛⬛⬛⬛⬛')
 
-AttemptStrings = namedtuple("AttemptStrings", "day_string score_string guess_list")
-QuordleAttempt = namedtuple("Attempt", "day score guesses num_correct")
-
-class InvalidDay(Exception):
-    pass
-
-class Guess():
-    def __init__(self, tiles, score) -> None:
-        self.tiles = tiles
-        if score != '🟥':
-            self.score = int(score)
-        else:
-            self.score = INCORRECT_GUESS_SCORE
-
-    def is_valid(self):
-        try:
-            guessed_row = self.tiles.index('🟩🟩🟩🟩🟩') + 1
-            return self.score == guessed_row
-        except ValueError:
-            return self.score == INCORRECT_GUESS_SCORE
-
+@dataclass
 class QuordleAttemptParser(AttemptParser):
-    def __init__(self, attempt: str):
-        self.errors = []
-        self.attempt = attempt
-        self.attempt_details: QuordleAttempt | None = None
+    attempt: str
+    error: str = "" # TODO
 
-    # def parse(self) -> WordleAttempt:
-    #     try:
-    #         return self.parse_attempt()
-    #     except ParsingError as e:
-    #         self.handle_error(e)
-
-    def parse(self) -> QuordleAttempt:
+    def parse(self) -> QourdleAttempt:
         try:
-            attempt = self.attempt
-            attempt_strings = self.split_attempt(attempt)
-            day = self.get_day(attempt_strings.day_string)
-            num_correct = self.get_correct(attempt_strings.score_string)
-            score = self.get_score(attempt_strings.score_string)
-            if num_correct == 4:
-                score -= 1
-            score = 50 - score
-            guesses = self.get_guesses(attempt_strings)
-            self.attempt_details = QuordleAttempt(day, score, guesses, num_correct)
-        except AssertionError as e:
-            raise
+            return self.parse_attempt()
+        except ParsingError as e:
+            self.handle_error(e)
 
-    def validate_guesses(self):
-        if not self.errors or self.attempt_details:
-            scores = set()
+    def parse_attempt(self):
+        lines = self.get_lines()
+        info = QourdleGuessInfo("\n".join(lines[0:3]))
+        words = self.extract_words(lines[3:])
+        for word_num, word in enumerate(words):
+            if info.scores[word_num] != word.correct_guess:
+                raise InvalidScore(info.score) # TODO This should be moved inside attempt as not a parsing error is an attempt error.
+        return QourdleAttempt(info, words)
+
+    def get_lines(self):
+        lines = [line.strip() for line in self.attempt.split("\n")]
+        lines.remove("quordle.com")
+        if len(lines) <= 9 or len(lines) > 23:
+            raise InvalidFormatError(self.attempt)
+        return lines
+
+    def extract_words(self, all_words):
+        guess_list = []
+        seperator = all_words.index("")
+        first_words = all_words[:seperator]
+        second_words = all_words[seperator+1:]
+        for words in (first_words, second_words):
+            for word in self.split_words(words):
+                guess_list.append(Guesses(word, INCORRECT_GUESS_SCORE))
+
+        for word_num, word in enumerate(guess_list):
+            print(f"{word_num}: {word} - {word.correct_guess}")
+        return guess_list
+
+    def split_words(self, combined_words):
+        left_word = []
+        right_word = []
+        for guesses in combined_words:
+            left_guess, right_guess = guesses.split(" ")
+            left_word.append(left_guess)
+            right_word.append(right_guess)
+        return [left_word, right_word]
+
+    def handle_error(self, error: ParsingError):
+        logging.warning(f"{error!r}")
+        self.errorr = str(error.message)
+        raise error
+
+
+@dataclass
+class QourdleGuessInfo(GuessInfo):
+    creation_day: date = date(2022, 1, 24)
+    valid_format = re.compile("^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$")
+    scores = []
+
+    @property
+    def bonus_points(self):
+        all_correct = all(score != '🟥' for score in self.scores)
+        return 1 if all_correct else 0
+
+    def validate_format(self):
+        self.sanitise_info()
+        if self.valid_format.match(self.info) is None:
+            raise InvalidFormatError(self.info)
+
+    def sanitise_info(self):
+        self.info = self.info.strip()
+        for bad_char in ('\ufe0f', '\u20e3'):
+            self.info = self.info.replace(bad_char, '')
+
+    def extract_day_and_score(self):
+        info_parts = self.info.split('\n')
+        self.day = info_parts[0].split('#')[1]
+        self.scores = list("".join(info_parts[1:]))
+
+    def parse_day(self):
+        self.validate_day()
+        return int(self.day)
+
+    def validate_day(self):
+        try:
+            day = int(self.day)
+            if day not in self.valid_puzzle_days:
+                raise InvalidDay(day, self.valid_puzzle_days)
+        except ValueError:
+            raise InvalidDay(self.day)
+
+    def parse_score(self):
+        self.validate_scores()
+        for score_num, score in enumerate(self.scores):
+            if score == "🟥":
+                self.scores[score_num] = INCORRECT_GUESS_SCORE
+            else:
+                self.scores[score_num] = int(score)
+
+        return sum(self.scores) + self.bonus_points
+
+    def validate_scores(self):
+        for score in self.scores:
             try:
-                assert isinstance(self.attempt_details, QuordleAttempt)
-                assert len(self.attempt_details.guesses) == 4
-                for i, guess in enumerate(self.attempt_details.guesses):
-                    assert guess.is_valid()
-                    if guess.score != INCORRECT_GUESS_SCORE:
-                        scores.add(guess.score)
-                    else:
-                        scores.add(guess.score + i)
-                self.assert_unique_scores(scores)
+                assert len(score) == 1
+                assert score in '123456789🟥'
             except AssertionError:
-                if not self.errors:
-                    self.errors.append("Tiles do not match scores")
-                return
-
-    def validate_parsing(self, attempt_values: AttemptStrings):
-        try:
-            assert "Daily Quordle" in attempt_values.day_string
-            assert len(attempt_values.score_string) == 4
-            for score_string in attempt_values.score_string:
-                for character in score_string:
-                    assert character in '🟥123456789'
-            assert len(attempt_values.guess_list) == 4
-            for guess in attempt_values.guess_list:
-                assert len(guess) > 0 and len(guess) <= MAX_TILES_PER_WORD
-                for tiles in guess:
-                    assert all(tile in '🟨🟩⬜⬛' for tile in tiles)
-        except AssertionError as e:
-            self.errors.append("Message format not supported")
-            raise
-
-    def assert_unique_scores(self, scores):
-        try:
-            assert len(scores) == 4
-        except AssertionError as e:
-            self.errors.append("You can't guess two words with one guess you fucking moron.")
-            raise
-
-    def split_attempt(self, attempt: str):
-        lines = [line.strip() for line in attempt.split("\n") if line.strip()]
-        scores = self.parse_scores(lines[1:3])
-        attempt_values = AttemptStrings(
-            lines[0],
-            scores,
-            self.parse_tiles(lines[4:]),
-        )
-        self.validate_parsing(attempt_values)
-        return attempt_values
-
-    def parse_scores(self, lines: list):
-        stripped_lines = [line.replace('\ufe0f', '').replace('\u20e3', '') for line in lines]
-        scores = ''.join(stripped_lines)
-        return scores
-
-    def parse_tiles(self, tiles):
-        words = []
-        first_tile_list = []
-        second_tile_list = []
-        word_len = 0
-
-        for tile_string in tiles:
-            assert len(words) < 4
-            word_len += 1
-            first_tiles, second_tiles = tile_string.split(' ')
-            first_tile_list.append(first_tiles)
-            second_tile_list.append(second_tiles)
-
-            if first_tiles in COMPLETED_TILES and second_tiles in COMPLETED_TILES:
-                words.append(first_tile_list)
-                words.append(second_tile_list)
-                first_tile_list = []
-                second_tile_list = []
-                word_len = 0
-
-            elif (word_len) % MAX_TILES_PER_WORD == 0:
-                words.append(first_tile_list)
-                words.append(second_tile_list)
-                first_tile_list = []
-                second_tile_list = []
-                word_len = 0
-
-        return words
-
-    
-    def get_guesses(self, attempt_values: AttemptStrings):
-        guesses = []
-        guess_details = zip(attempt_values.guess_list, attempt_values.score_string)
-        for details in guess_details:
-            guesses.append(Guess(*details))
-        return guesses
-
-    def extract_day(self, line: str):
-        try:
-            _, day = line.split("#")
-            return int(day)
-        except TypeError as e:
-            raise InvalidDay
-    
-    def validate_day(self, puzzle_day: int):
-        creation_day = date(2022, 1, 24)
-        todays_puzzle = (date.today() - creation_day).days
-        yesterdays_puzzle = todays_puzzle - 1
-        if puzzle_day not in (todays_puzzle, yesterdays_puzzle):
-            return False
-        return True
-
-    def get_day(self, day_string: str):
-        attempt_day = self.extract_day(day_string)
-        if self.validate_day(attempt_day):
-            return attempt_day
-        raise InvalidDay
-
-    def extract_score(self, score: str):
-        if score == '🟥':
-            return INCORRECT_GUESS_SCORE
-        else:
-            return int(score)
-
-    def get_score(self, score_string: str):
-        score_tally = 0
-        for score in score_string:
-            score_tally += self.extract_score(score)
-        return score_tally
-    
-    def get_correct(self, score_string: str):
-        return 4 - score_string.count('🟥')
+                raise InvalidScore(score)
 
 
-if __name__ == "__main__":
-    attempt1 = """
-Daily Quordle #29
-6️⃣9️⃣
-🟥8️⃣
-quordle.com
-⬜⬜⬜🟨⬜ ⬜⬜⬜⬜🟨
-🟨🟨⬜⬜⬜ ⬜🟨⬜🟨⬜
-⬜⬜🟨⬜⬜ ⬜🟩⬜⬜⬜
-⬜⬜🟨⬜⬜ ⬜⬜⬜⬜🟩
-🟨🟨🟩🟩🟨 ⬜⬜⬜🟨⬜
-🟩🟩🟩🟩🟩 ⬜⬜⬜🟨⬜
-⬛⬛⬛⬛⬛ ⬜⬜⬜⬜🟨
-⬛⬛⬛⬛⬛ ⬜🟨⬜🟨⬜
-⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩
+@dataclass
+class QourdleAttempt:
+    info: QourdleGuessInfo
+    guesses: Guesses
 
-⬜⬜🟨⬜⬜ ⬜⬜⬜🟨⬜
-⬜🟨⬜⬜🟨 ⬜🟨🟨🟨⬜
-⬜⬜⬜⬜⬜ ⬜⬜⬜⬜⬜
-⬜⬜⬜🟨⬜ ⬜🟩⬜⬜⬜
-⬜⬜⬜🟨⬜ ⬜🟨⬜🟩⬜
-⬜⬜⬜🟨⬜ 🟨⬜⬜🟩⬜
-⬜⬜⬜⬜⬜ 🟩🟨⬜🟨⬜
-⬜⬜⬜🟨⬜ 🟩🟩🟩🟩🟩
-⬜⬜🟩⬜⬜ ⬛⬛⬛⬛⬛
-"""
-    
-    attempt2 = """
-    Daily Quordle #28
-5️⃣6️⃣
-8️⃣7️⃣
-quordle.com
-🟩🟨⬜⬜🟨 ⬜⬜🟨⬜🟨
-⬜🟨🟩⬜⬜ ⬜🟨⬜⬜⬜
-⬜⬜⬜🟨⬜ ⬜⬜⬜⬜🟨
-🟨⬜⬜🟩⬜ ⬜🟩🟨🟩🟨
-🟩🟩🟩🟩🟩 ⬜⬜⬜🟩⬜
-⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩
-
-⬜⬜⬜⬜🟨 ⬜⬜⬜⬜⬜
-⬜🟩⬜⬜🟩 ⬜⬜⬜🟩⬜
-⬜⬜⬜🟩⬜ ⬜⬜⬜⬜⬜
-⬜⬜⬜🟨⬜ 🟩⬜⬜⬜⬜
-⬜🟨⬜🟨⬜ ⬜⬜⬜⬜🟨
-⬜⬜⬜🟨⬜ ⬜⬜⬜⬜🟩
-⬜⬜🟨⬜⬜ 🟩🟩🟩🟩🟩
-🟩🟩🟩🟩🟩 ⬛⬛⬛⬛⬛
-"""
-
-    attempt3 = """
-Daily Quordle #30
-4️⃣🟥
-5️⃣8️⃣
-quordle.com
-🟨⬜⬜🟩🟩 ⬜⬜⬜⬜🟨
-⬜🟨⬜⬜🟨 🟩🟨⬜🟨🟩
-🟩🟩⬜⬜⬜ ⬜🟨⬜⬜🟨
-🟩🟩🟩🟩🟩 ⬜🟨⬜⬜🟨
-⬛⬛⬛⬛⬛ ⬜⬜⬜⬜⬜
-⬛⬛⬛⬛⬛ ⬜🟩🟨🟩⬜
-⬛⬛⬛⬛⬛ ⬜🟨🟨⬜⬜
-⬛⬛⬛⬛⬛ ⬜🟨🟨⬜⬜
-⬛⬛⬛⬛⬛ 🟩🟩⬜🟩🟩
-
-🟨⬜⬜⬜⬜ ⬜⬜⬜⬜🟨
-⬜⬜⬜⬜⬜ ⬜🟩🟨🟨⬜
-🟨⬜🟨⬜⬜ ⬜⬜⬜⬜⬜
-🟨⬜🟩⬜⬜ ⬜⬜⬜⬜🟨
-🟩🟩🟩🟩🟩 ⬜⬜⬜⬜⬜
-⬛⬛⬛⬛⬛ ⬜🟨⬜🟨🟨
-⬛⬛⬛⬛⬛ ⬜🟩⬜🟩🟩
-⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩
-    """
-    attempt = QuordleAttemptParser(attempt1)
-    attempt_details = attempt.parse()
-    attempt.validate_guesses()
-    print(attempt.attempt_details)
-    print(attempt.errors)
+    @property
+    def score(self):
+        return 50 - self.info.score

@@ -27,7 +27,7 @@ class WordleAttemptParser(AttemptParser):
         info = WordleGuessInfo(lines[0])
         guesses = Guesses(lines[1:], INCORRECT_GUESS_SCORE)
         if info.score != guesses.correct_guess:
-            raise InvalidScore(info.score)
+            raise InvalidScore(info.score) # TODO This should be moved inside attempt as not a parsing error is an attempt error.
         return WordleAttempt(info, guesses)
 
     def get_lines(self):
