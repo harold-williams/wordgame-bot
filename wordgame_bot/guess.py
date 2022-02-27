@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
+from datetime import date
+from distutils.log import info
 
 from wordgame_bot.exceptions import InvalidTiles
 
@@ -11,12 +13,20 @@ COMPLETED_TILES = ('🟩🟩🟩🟩🟩', '⬜⬜⬜⬜⬜', '⬛⬛⬛⬛⬛')
 @dataclass
 class GuessInfo(ABC):
     info: str
-    day: int | None = None 
-    score: int | None = None 
+    creation_day: date
+    day: int | None = None
+    score: int | None = None
 
     def __post_init__(self):
+        print(f"Info Is: {self.info}")
         self.validate_format()
         self.parse()
+
+    @property
+    def valid_puzzle_days(self):
+        todays_puzzle = (date.today() - self.creation_day).days
+        yesterdays_puzzle = todays_puzzle - 1
+        return (todays_puzzle, yesterdays_puzzle)
 
     @abstractclassmethod
     def validate_format(self):

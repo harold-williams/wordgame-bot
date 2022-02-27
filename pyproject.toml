@@ -6,6 +6,7 @@ authors = ["Harry Williams <1998.harrywilliams@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+freezegun = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

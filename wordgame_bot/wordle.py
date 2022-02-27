@@ -1,36 +1,55 @@
 from __future__ import annotations
 
 import logging
-from collections import namedtuple
 from dataclasses import dataclass
 from datetime import date
+import re
 
 from wordgame_bot.attempt import AttemptParser
 from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
 from wordgame_bot.guess import GuessInfo, Guesses
 
 INCORRECT_GUESS_SCORE = 8
-MAX_TILES_PER_WORD = 6
-COMPLETED_TILES = ('🟩🟩🟩🟩🟩', '⬜⬜⬜⬜⬜')
+
+@dataclass
+class WordleAttemptParser(AttemptParser):
+    attempt: str
+    error: str = "" # TODO
+
+    def parse(self) -> WordleAttempt:
+        try:
+            return self.parse_attempt()
+        except ParsingError as e:
+            self.handle_error(e)
+
+    def parse_attempt(self):
+        lines = self.get_lines()
+        info = WordleGuessInfo(lines[0])
+        guesses = Guesses(lines[1:], INCORRECT_GUESS_SCORE)
+        if info.score != guesses.correct_guess:
+            raise InvalidScore(info.score)
+        return WordleAttempt(info, guesses)
+
+    def get_lines(self):
+        lines = [line.strip() for line in self.attempt.split("\n") if line.strip()]
+        if len(lines) <= 1 or len(lines) > 7:
+            raise InvalidFormatError(self.attempt)
+        return lines
+
+    def handle_error(self, error: ParsingError):
+        logging.warning(f"{error!r}")
+        self.errorr = str(error.message)
+        raise error
 
 
+@dataclass
 class WordleGuessInfo(GuessInfo):
-
-    @property
-    def valid_puzzle_days(self):
-        creation_day = date(2021, 6, 19)
-        todays_puzzle = (date.today() - creation_day).days
-        yesterdays_puzzle = todays_puzzle - 1
-        return (todays_puzzle, yesterdays_puzzle)
+    creation_day: date = date(2021, 6, 19)
+    valid_format = re.compile("^Wordle [0-9]+ [1-6X]\/6$")
 
     def validate_format(self):
         self.info = self.info.strip()
-        try:
-            assert self.info.startswith("Wordle")
-            info_parts = self.info.split(' ')
-            assert len(info_parts) == 3
-            assert self.info.endswith("/6")
-        except AssertionError:
+        if self.valid_format.match(self.info) is None:
             raise InvalidFormatError(self.info)
 
     def extract_day_and_score(self):
@@ -47,7 +66,7 @@ class WordleGuessInfo(GuessInfo):
             day = int(self.day)
             if day not in self.valid_puzzle_days:
                 raise InvalidDay(day, self.valid_puzzle_days)
-        except TypeError:
+        except ValueError:
             raise InvalidDay(self.day)
 
     def parse_score(self):
@@ -73,87 +92,3 @@ class WordleAttempt:
     @property
     def score(self):
         return 10 - self.info.score
-
-
-class WordleAttemptParser(AttemptParser):
-    def __init__(self, attempt: str):
-        self.errors: list[str] = []
-        self.attempt: str = attempt
-
-    def error_message(self):
-        return (
-            f"Invalid Attempt: {self.errors}",
-        )
-
-    def handle_error(self, error: ParsingError):
-        logging.warning(f"{error!r}")
-        self.errors.append(str(error.message))
-        raise error
-
-    def parse(self) -> WordleAttempt:
-        try:
-            return self.parse_attempt()
-        except ParsingError as e:
-            self.handle_error(e)
-
-    def parse_attempt(self):
-        lines = self.get_lines()
-        info = WordleGuessInfo(lines[0])
-        guesses = Guesses(lines[1:], INCORRECT_GUESS_SCORE)
-        print(guesses.correct_guess)
-        print(info.score)
-        print(type(guesses.correct_guess))
-        print(type(info.score))
-        if info.score != guesses.correct_guess:
-            raise InvalidScore(info.score)
-        return WordleAttempt(info, guesses)
-
-    def get_lines(self):
-        lines = [line.strip() for line in self.attempt.split("\n") if line.strip()]
-        if len(lines) <= 1 or len(lines) > 7:
-            raise InvalidFormatError(self.attempt)
-
-        return lines
-
-if __name__ == "__main__":
-#     attempt1 = """
-# Wordle 248 4/6
-
-# ⬛⬛⬛🟨⬛
-# 🟨🟨⬛🟩⬛
-# ⬛🟩🟩🟩🟨
-# 🟩🟩🟩🟩🟩
-# """
-
-#     attempt2 = """
-# Wordle 248 X/6
-
-# 🟩⬜⬜🟩⬜
-# 🟩⬜⬜🟩⬜
-# 🟩⬜⬜🟩⬜
-# ⬜⬜⬜🟨⬜
-# ⬜⬜⬜⬜⬜
-# ⬜⬜⬜⬜⬜
-# """
-
-#     attempt3 = """
-# Wordle 247 2/6
-
-# ⬛⬛⬛⬛⬛
-# ⬛⬛⬛⬛🟨
-# ⬛🟨🟩🟨⬛
-# 🟩🟩🟩🟩🟩
-# """
-
-    attempt4 = """
-Wordle 251 4/6
-
-⬛⬛⬛🟨⬛
-⬛🟨⬛⬛⬛
-🟩🟩🟨⬛⬛
-🟩🟩🟩🟩🟩
-"""
-
-    attempt = WordleAttemptParser(attempt4)
-    details = attempt.parse()
-    print(details)

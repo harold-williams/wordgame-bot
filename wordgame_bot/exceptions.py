@@ -7,13 +7,13 @@ class ParsingError(Exception):
 
     def __init__(self, message: str, *args: object) -> None:
         self.message = message
-        super().__init__(*args)
+        super().__init__(message, *args)
 
     def __str__(self) -> str:
-        return self.message
+        return str(self.message)
 
     def __repr__(self) -> str:
-        return f"{self}"
+        return str(self.message) # TODO - Improve repr format
 
 
 @dataclass
@@ -21,13 +21,14 @@ class InvalidTiles(ParsingError):
     tiles: list[str]
 
     def __post_init__(self) -> None:
-        message = f"Incorrect tile format: {self.tiles}"
-        super().__init__(message)
+        self.message = f"Incorrect tile format: {self.tiles}"
+        super().__init__(self.message)
 
 
+@dataclass
 class InvalidDay(ParsingError):
     day: int | str
-    valid_days: tuple[int, int] | None
+    valid_days: tuple[int, int] | None = None
 
     def __post_init__(self) -> None:
         if self.valid_days is not None: 
@@ -37,23 +38,19 @@ class InvalidDay(ParsingError):
         super().__init__(self.message)
 
 
+@dataclass
 class InvalidScore(ParsingError):
+    score: str
 
-    def __init__(
-        self,
-        score: str,
-        *args: object
-    ) -> None:
-        message = f"Invalid score provided: {score}"
-        super().__init__(message, *args)
+    def __post_init__(self) -> None:
+        self.message = f"Invalid score provided: {self.score}"
+        super().__init__(self.message)
 
 
+@dataclass
 class InvalidFormatError(ParsingError):
-
-    def __init__(
-        self,
-        user_input: str,
-        *args: object
-    ) -> None:
-        message = f"User input incorrectly formatted: {user_input}"
-        super().__init__(message, *args)
+    user_input: str
+    
+    def __post_init__(self) -> None:
+        self.message = f"User input incorrectly formatted: {self.user_input}"
+        super().__init__(self.message)
