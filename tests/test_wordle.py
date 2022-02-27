@@ -17,11 +17,6 @@ def remove_info_validation():
     with patch('wordgame_bot.wordle.WordleGuessInfo.__post_init__'):
         yield
 
-@contextmanager
-def allow_any_days():
-    with patch('wordgame_bot.wordle.WordleGuessInfo.validate_day'):
-        yield
-
 @pytest.mark.parametrize(
     "info",
     [
@@ -257,12 +252,11 @@ def test_wordle_get_lines(number_lines: int, expect_error: bool):
     ]
 )
 def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
-    with allow_any_days():
-        parser = WordleAttemptParser(attempt)
-        parsed_attempt = parser.parse()
-        assert isinstance(parsed_attempt, WordleAttempt)
-        assert parsed_attempt.info.day == expected_day
-        assert parsed_attempt.score == expected_score
+    parser = WordleAttemptParser(attempt)
+    parsed_attempt = parser.parse()
+    assert isinstance(parsed_attempt, WordleAttempt)
+    assert parsed_attempt.info.day == expected_day
+    assert parsed_attempt.score == expected_score
 
 @freeze_time("2021, 6, 25")
 @pytest.mark.parametrize(

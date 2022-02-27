@@ -75,7 +75,7 @@ class QourdleGuessInfo(GuessInfo):
     @property
     def bonus_points(self):
         all_correct = all(score != '🟥' for score in self.scores)
-        return 1 if all_correct else 0
+        return -1 if all_correct else 0
 
     def validate_format(self):
         self.sanitise_info()
