@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 from distutils.log import info
 
-from wordgame_bot.exceptions import InvalidTiles
+from wordgame_bot.exceptions import InvalidDay, InvalidTiles
 
 COMPLETED_TILES = ('🟩🟩🟩🟩🟩', '⬜⬜⬜⬜⬜', '⬛⬛⬛⬛⬛')
 
@@ -18,7 +18,6 @@ class GuessInfo(ABC):
     score: int | None = None
 
     def __post_init__(self):
-        print(f"Info Is: {self.info}")
         self.validate_format()
         self.parse()
 
@@ -36,6 +35,14 @@ class GuessInfo(ABC):
         self.extract_day_and_score()
         self.day = self.parse_day()
         self.score = self.parse_score()
+
+    def validate_day(self):
+        try:
+            day = int(self.day)
+            if day not in self.valid_puzzle_days:
+                raise InvalidDay(day, self.valid_puzzle_days)
+        except ValueError:
+            raise InvalidDay(self.day)
 
     @abstractclassmethod
     def extract_day_and_score(self):

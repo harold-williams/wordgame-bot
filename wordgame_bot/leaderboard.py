@@ -3,15 +3,16 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass
 import os
+from typing import Tuple
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from discord import Color, Embed, User
 import psycopg2
 
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
 
-load_dotenv()
+# load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 CREATE_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS attempts (
@@ -41,7 +42,7 @@ FROM (
 INNER JOIN users
     ON scores.user_id = users.user_id;
 """
-Scores = tuple[int, str, int]
+Scores = Tuple[int, str, int]
 
 @dataclass
 class AttemptDuplication(Exception):
@@ -97,6 +98,7 @@ class Leaderboard:
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
+            print(curs.fetchone)
             curs.execute("SELECT * FROM users WHERE user_id = %s", (user.id,))
             if curs.fetchone() is not None:
                 return

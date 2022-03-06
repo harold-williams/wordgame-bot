@@ -61,14 +61,6 @@ class WordleGuessInfo(GuessInfo):
         self.validate_day()
         return int(self.day)
 
-    def validate_day(self):
-        try:
-            day = int(self.day)
-            if day not in self.valid_puzzle_days:
-                raise InvalidDay(day, self.valid_puzzle_days)
-        except ValueError:
-            raise InvalidDay(self.day)
-
     def parse_score(self):
         self.validate_score()
         if self.score == "X":

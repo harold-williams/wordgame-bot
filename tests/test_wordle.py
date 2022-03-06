@@ -1,13 +1,11 @@
 from __future__ import annotations
 from contextlib import contextmanager
 
-from datetime import date
 from unittest.mock import MagicMock, patch
 
 from freezegun import freeze_time
 import pytest
 
-from wordgame_bot.guess import GuessInfo
 from wordgame_bot.wordle import INCORRECT_GUESS_SCORE, WordleAttempt, WordleAttemptParser, WordleGuessInfo
 from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
 
