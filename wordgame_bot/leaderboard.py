@@ -42,17 +42,19 @@ FROM (
 INNER JOIN users
     ON scores.user_id = users.user_id;
 """
-Scores = Tuple[int, str, int]
+Scores = Tuple[str, int]
+
 
 @dataclass
 class AttemptDuplication(Exception):
     username: str
     day: int
 
+
 class Leaderboard:
     def __init__(self, conn) -> None:
         self.conn = conn
-        self.scores = []
+        self.scores: list[Scores] = []
         self.create_table()
     
     def create_table(self):
@@ -98,17 +100,12 @@ class Leaderboard:
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
-            print(curs.fetchone)
-            curs.execute("SELECT * FROM users WHERE user_id = %s", (user.id,))
+            curs.execute(f"SELECT * FROM users WHERE user_id = {user.id}")
             if curs.fetchone() is not None:
                 return
             else:
                 curs.execute(
-                    "INSERT INTO users(user_id, username) VALUES (%s, %s)",
-                    (
-                        user.id,
-                        user.name
-                    )
+                    f"INSERT INTO users(user_id, username) VALUES ({user.id}, {user.name})"
                 )
                 self.conn.commit()
         return
@@ -117,7 +114,7 @@ class Leaderboard:
         self.retrieve_scores()
         return self.format_leaderboard()
 
-    def retrieve_scores(self) -> list[Scores]:
+    def retrieve_scores(self):
         self.scores = []
         with self.conn.cursor() as curs:
             curs.execute(LEADERBOARD_SCHEMA)
