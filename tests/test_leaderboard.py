@@ -1,15 +1,24 @@
 from __future__ import annotations
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from wordgame_bot.leaderboard import LEADERBOARD_SCHEMA, Leaderboard, Score
+import psycopg2
+from wordgame_bot.leaderboard import CREATE_TABLE_SCHEMA, LEADERBOARD_SCHEMA, AttemptDuplication, Leaderboard, Score, connect_to_leaderboard
+from wordgame_bot.quordle import QuordleAttempt
+from wordgame_bot.wordle import WordleAttempt
 
+def test_create_table_on_instantiation():
+    leaderboard = Leaderboard(MagicMock())
+    mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
+    execute: MagicMock = mocked_cursor.execute
+    execute.assert_called_once_with(CREATE_TABLE_SCHEMA)
 
 def test_verify_new_user(leaderboard: Leaderboard, user):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
     execute: MagicMock = mocked_cursor.execute
     fetchone: MagicMock = mocked_cursor.fetchone
+    fetchone.return_value = None
     leaderboard.verify_valid_user(user)
     fetchone.assert_called_once()
     execute.assert_any_call(
@@ -87,12 +96,6 @@ def test_get_ranks_table(leaderboard: Leaderboard, scores: list[Score], expected
     leaderboard.scores = scores
     assert leaderboard.get_ranks_table() == expected_ranks
 
-# @pytest.mark.parametrize(
-#     "scores",
-#     [
-
-#     ]
-# )
 def test_get_leaderboard(leaderboard: Leaderboard):
     leaderboard.retrieve_scores = MagicMock()
     leaderboard.get_ranks_table = MagicMock(return_value = "ranks_mock")
@@ -106,3 +109,88 @@ def test_get_leaderboard(leaderboard: Leaderboard):
         'value': 'ranks_mock'
     }
     assert leaderboard_contents.get("title", "") == "🏆 Leaderboard 🏆"
+
+@pytest.mark.parametrize(
+    "attempt",
+    [
+        QuordleAttempt(
+            info = MagicMock(day = 5, score = 10),
+            guesses = MagicMock()
+        ),
+        WordleAttempt(
+            info = MagicMock(day = 5, score = 2),
+            guesses = MagicMock()
+        ),
+    ]
+)
+def test_insert_valid_submission(leaderboard: Leaderboard, user, attempt):
+    mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
+    execute: MagicMock = mocked_cursor.execute
+    leaderboard.verify_valid_user = MagicMock()
+    leaderboard.insert_submission(attempt, user)
+    execute.assert_called_once_with(
+        "INSERT INTO attempts(user_id, mode, day, score) "
+        "VALUES ("
+            f"{user.id},"
+            f"{attempt.gamemode},"
+            f"{attempt.info.day},"
+            f"{attempt.score}"
+        ")"
+    )
+
+@pytest.mark.parametrize(
+    "attempt",
+    [
+        QuordleAttempt(
+            info = MagicMock(day = 5, score = 10),
+            guesses = MagicMock()
+        ),
+        WordleAttempt(
+            info = MagicMock(day = 5, score = 2),
+            guesses = MagicMock()
+        ),
+    ]
+)
+def test_insert_invalid_submission(leaderboard: Leaderboard, user, attempt):
+    mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
+    execute: MagicMock = mocked_cursor.execute
+    execute.side_effect = psycopg2.errors.UniqueViolation
+    leaderboard.verify_valid_user = MagicMock()
+    with pytest.raises(AttemptDuplication) as duplication_error:
+        leaderboard.insert_submission(attempt, user)
+    execute.assert_called_once_with(
+        "INSERT INTO attempts(user_id, mode, day, score) "
+        "VALUES ("
+            f"{user.id},"
+            f"{attempt.gamemode},"
+            f"{attempt.info.day},"
+            f"{attempt.score}"
+        ")"
+    )
+    assert duplication_error.value.username == user.name
+    assert duplication_error.value.day == attempt.info.day
+
+@patch("wordgame_bot.leaderboard.psycopg2.connect")
+def test_successful_connect_to_leaderboard(connect: MagicMock):
+    mock_conn = MagicMock()
+    connect.return_value = mock_conn
+
+    with connect_to_leaderboard() as leaderboard:
+        connect.assert_called_once()
+        assert leaderboard.conn == mock_conn
+        mock_conn.close.assert_not_called()
+
+    mock_conn.close.assert_called_once()
+
+@patch("wordgame_bot.leaderboard.psycopg2.connect")
+def test_error_connecting_to_leaderboard(connect: MagicMock):
+    mock_conn = MagicMock()
+    connect.return_value = mock_conn
+    Leaderboard.__init__ = MagicMock(side_effect = Exception)
+    with pytest.raises(Exception):
+        with connect_to_leaderboard() as leaderboard:
+            connect.assert_called_once()
+            assert leaderboard.conn == mock_conn
+            mock_conn.close.assert_not_called()
+
+    mock_conn.close.assert_called_once()

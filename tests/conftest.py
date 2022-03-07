@@ -21,10 +21,5 @@ def user():
 
 @pytest.fixture
 def leaderboard():
-    conn = MagicMock()
-    curs = MagicMock()
-    curs.fetchone  = MagicMock(return_value = None)
-    # curs.execute.return_value = None)
-    conn.cursor.return_value.__enter__.return_value = curs
     Leaderboard.create_table = MagicMock()
-    return Leaderboard(conn)
+    return Leaderboard(MagicMock())

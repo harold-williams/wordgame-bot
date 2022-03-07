@@ -8,6 +8,7 @@ from typing import Tuple
 # from dotenv import load_dotenv
 from discord import Color, Embed, User
 import psycopg2
+from wordgame_bot.attempt import Attempt
 
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
@@ -62,41 +63,23 @@ class Leaderboard:
             curs.execute(CREATE_TABLE_SCHEMA)
             self.conn.commit()
 
-    def insert_wordle(self, attempt: WordleAttempt, user: User):
+    def insert_submission(self, attempt: Attempt, user: User):
         self.verify_valid_user(user)
         try:
             with self.conn.cursor() as curs:
                 curs.execute(
-                    "INSERT INTO attempts(user_id, mode, day, score) VALUES (%s, %s, %s, %s)",
-                    (
-                        user.id,
-                        'W',
-                        attempt.info.day,
-                        attempt.score,
-                    )
+                    "INSERT INTO attempts(user_id, mode, day, score) "
+                    "VALUES ("
+                      f"{user.id},"
+                      f"{attempt.gamemode},"
+                      f"{attempt.info.day},"
+                      f"{attempt.score}"
+                    ")",
                 )
                 self.conn.commit()
         except psycopg2.errors.UniqueViolation:
             self.conn.rollback()
-            raise AttemptDuplication(user.name, attempt.day)
-
-    def insert_submission(self, attempt: QuordleAttempt, user: User):
-        self.verify_valid_user(user)
-        try:
-            with self.conn.cursor() as curs:
-                curs.execute(
-                    "INSERT INTO attempts(user_id, mode, day, score) VALUES (%s, %s, %s, %s)",
-                    (
-                        user.id,
-                        'Q',
-                        attempt.info.day,
-                        attempt.score,
-                    )
-                )
-                self.conn.commit()
-        except psycopg2.errors.UniqueViolation:
-            self.conn.rollback()
-            raise AttemptDuplication(user.name, attempt.day)
+            raise AttemptDuplication(user.name, attempt.info.day)
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
@@ -155,6 +138,8 @@ class Leaderboard:
 
 @contextmanager
 def connect_to_leaderboard() -> Leaderboard:
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    yield Leaderboard(conn)
-    conn.close()
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        yield Leaderboard(conn)
+    finally:
+        conn.close()

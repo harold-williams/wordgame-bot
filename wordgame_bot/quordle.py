@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import date
 import re
 
-from wordgame_bot.attempt import AttemptParser
+from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
 from wordgame_bot.guess import GuessInfo, Guesses
 
@@ -124,10 +124,11 @@ class QuordleGuessInfo(GuessInfo):
 
 
 @dataclass
-class QuordleAttempt:
-    info: QuordleGuessInfo
-    guesses: Guesses
-
+class QuordleAttempt(Attempt):
     @property
     def score(self):
         return 50 - self.info.score
+
+    @property
+    def gamemode(self):
+        return "Q"

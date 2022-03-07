@@ -248,8 +248,7 @@ def test_parse_day(day: str, expected_day: int | None):
         try:
             assert guess_info.parse_day() == expected_day
         except InvalidDay:
-            if expected_day is not None:
-                pytest.fail()
+            assert expected_day is None
 
 @pytest.mark.parametrize(
 "scores, expected_score",
@@ -268,6 +267,4 @@ def test_parse_score(scores: list[str], expected_score: int | None):
         try:
             assert guess_info.parse_score() == expected_score
         except InvalidScore:
-            if expected_score is not None:
-                pytest.fail()
-
+            assert expected_score is None

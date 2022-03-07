@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import date
 import re
 
-from wordgame_bot.attempt import AttemptParser
+from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
 from wordgame_bot.guess import GuessInfo, Guesses
 
@@ -77,10 +77,11 @@ class WordleGuessInfo(GuessInfo):
 
 
 @dataclass
-class WordleAttempt:
-    info: WordleGuessInfo
-    guesses: Guesses
-
+class WordleAttempt(Attempt):
     @property
     def score(self):
         return 10 - self.info.score
+
+    @property
+    def gamemode(self):
+        return "W"
