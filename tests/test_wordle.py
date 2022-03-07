@@ -23,13 +23,10 @@ def remove_info_validation():
         ("Wordle 20 X/6"),
     ]
 )
-def test_valid_info_format(info: str):
+def test_valid_info_format_raises_no_error(info: str):
     with remove_info_validation():
-        try:
-            info = WordleGuessInfo(info)
-            info.validate_format()
-        except InvalidFormatError:
-            pytest.fail()
+        info = WordleGuessInfo(info)
+        info.validate_format()
 
 @pytest.mark.parametrize(
     "info",

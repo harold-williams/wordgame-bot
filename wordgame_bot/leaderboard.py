@@ -42,7 +42,7 @@ FROM (
 INNER JOIN users
     ON scores.user_id = users.user_id;
 """
-Scores = Tuple[str, int]
+Score = Tuple[str, int]
 
 
 @dataclass
@@ -54,7 +54,7 @@ class AttemptDuplication(Exception):
 class Leaderboard:
     def __init__(self, conn) -> None:
         self.conn = conn
-        self.scores: list[Scores] = []
+        self.scores: list[Score] = []
         self.create_table()
     
     def create_table(self):
@@ -71,7 +71,7 @@ class Leaderboard:
                     (
                         user.id,
                         'W',
-                        attempt.day,
+                        attempt.info.day,
                         attempt.score,
                     )
                 )
@@ -89,7 +89,7 @@ class Leaderboard:
                     (
                         user.id,
                         'Q',
-                        attempt.day,
+                        attempt.info.day,
                         attempt.score,
                     )
                 )
@@ -117,10 +117,10 @@ class Leaderboard:
     def retrieve_scores(self):
         self.scores = []
         with self.conn.cursor() as curs:
-            curs.execute(LEADERBOARD_SCHEMA)
+            retrieved_scores = curs.execute(LEADERBOARD_SCHEMA)
+            for score in retrieved_scores:
+                self.scores.append(score)
             self.conn.commit()
-            for entry in curs:
-                self.scores.append(entry)
 
     def get_ranks_table(self):
         self.scores.sort(key=lambda x: x[1], reverse=True) 
@@ -158,8 +158,3 @@ def connect_to_leaderboard() -> Leaderboard:
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     yield Leaderboard(conn)
     conn.close()
-    
-        
-if __name__ == "__main__":
-    with connect_to_leaderboard() as lb:
-        print(lb.get_leaderboard())
