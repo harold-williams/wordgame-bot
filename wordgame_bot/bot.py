@@ -77,6 +77,6 @@ async def get_leaderboard(message) -> Embed:
     return bot.leaderboard.get_leaderboard()
 
 if __name__ == "__main__": # pragma: no cover
-    # with connect_to_leaderboard() as leaderboard:
-        # bot.leaderboard = leaderboard
-    bot.run(TOKEN)
+    with connect_to_leaderboard() as leaderboard:
+        bot.leaderboard = leaderboard
+        bot.run(TOKEN)
