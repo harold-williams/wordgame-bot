@@ -1,1 +1,1 @@
-worker: python bot.py
+worker: poetry run python wordgame_bot/bot.py
