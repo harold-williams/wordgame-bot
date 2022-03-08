@@ -1,7 +1,6 @@
 import logging
 import os
 
-# from dotenv import load_dotenv
 from discord import Message, Embed
 from discord.ext import commands
 from wordgame_bot.attempt import Attempt, AttemptParser
@@ -11,7 +10,6 @@ from wordgame_bot.quordle import QuordleAttemptParser
 from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard, connect_to_leaderboard
 from wordgame_bot.wordle import WordleAttemptParser
 
-# load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 
