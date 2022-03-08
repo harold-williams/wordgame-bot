@@ -43,7 +43,7 @@ class MessageCreator:
         else:
             thumbnail = get_failure_thumbnail()
         w_embed.set_thumbnail(url=thumbnail)
-        attempt_str = f"User: {user.name}\nDay: {attempt.info.day}\nScore: {attempt.score}/{attempt.score}\n"
+        attempt_str = f"User: {user.name}\nDay: {attempt.info.day}\nScore: {attempt.score}/{attempt.maxscore}\n"
         w_embed.add_field(name="Attempt", value=attempt_str, inline=False)
         w_embed.set_footer(text=WORDGAME_LINKS)
         return w_embed
@@ -74,7 +74,7 @@ class WordleMessage(MessageCreator):
 @dataclass
 class OctordleMessage(MessageCreator):
     threshold: int = 51
-    title: str = "🤓🍏 Octordle Submission 🤓🍏"
+    title: str = "🤓 Octordle Submission 🤓"
     colour: Colour = Colour.green()
     author: dict[str, str] = field(default_factory=lambda: {
         "name" : "OctordleParser",
