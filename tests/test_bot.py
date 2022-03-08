@@ -118,3 +118,31 @@ async def test_submit_duplicate_attempt(valid_message: Message):
     result = await submit_attempt(attempt, valid_message)
     bot.leaderboard.insert_submission.assert_called_once_with(mock_details, valid_message.author)
     assert result == None
+
+async def test_get_leaderboard(valid_message: Message):
+    valid_message.content = "leaderboard"
+    bot.leaderboard.get_leaderboard = MagicMock()
+    await on_message(valid_message)
+    bot.leaderboard.get_leaderboard.assert_called_once()
+
+@patch('wordgame_bot.bot.bot')
+async def test_handle_quordle(bot: MagicMock, valid_message: Message, mock_parser: MagicMock):
+    valid_message.content = QUORDLE_MESSAGE
+
+    with patch("wordgame_bot.bot.QuordleAttemptParser", return_value=mock_parser):
+        await on_message(valid_message)
+
+    mock_details = mock_parser.parse.return_value
+    bot.leaderboard.insert_submission.assert_called_once_with(mock_details, valid_message.author)
+    bot.quordle_message.create_embed.assert_called_once_with(mock_details, valid_message.author)
+
+@patch('wordgame_bot.bot.bot')
+async def test_handle_wordle(bot: MagicMock, valid_message: Message, mock_parser: MagicMock):
+    valid_message.content = WORDLE_MESSAGE
+
+    with patch("wordgame_bot.bot.WordleAttemptParser", return_value=mock_parser):
+        await on_message(valid_message)
+
+    mock_details = mock_parser.parse.return_value
+    bot.leaderboard.insert_submission.assert_called_once_with(mock_details, valid_message.author)
+    bot.wordle_message.create_embed.assert_called_once_with(mock_details, valid_message.author)

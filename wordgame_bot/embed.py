@@ -32,7 +32,7 @@ WORDGAME_LINKS = (
 
 
 class MessageCreator:
-    def create_embed(self, user: User, attempt: Attempt) -> Embed:
+    def create_embed(self, attempt: Attempt, user: User) -> Embed:
         w_embed = Embed(
             title = self.title,
             color = self.colour

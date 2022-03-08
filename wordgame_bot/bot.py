@@ -24,7 +24,7 @@ bot = WordgameBot(command_prefix='-')
 
 
 @bot.event
-async def on_ready():
+async def on_ready(): # pragma: no cover
     print(f"{bot.user.name} has connected to Discord!")
 
 @bot.event
@@ -34,8 +34,9 @@ async def on_message(message: Message):
         if message.content.startswith('Wordle ') and "/6" in message.content:
             embed = await handle_wordle(message)
         elif message.content.startswith('Daily Quordle #'):
+            print("handling")
             embed = await handle_quordle(message)
-        elif message.content.lower() in ("leaderboard", "l"):
+        elif message.content.split(" ")[0] in ("leaderboard", "l"):
             embed = await get_leaderboard(message)
         # TODO add listener for help message
 
@@ -44,13 +45,13 @@ async def on_message(message: Message):
 
 async def handle_quordle(message: Message) -> Embed:
     attempt = QuordleAttemptParser(message.content)
-    attempt_details = submit_attempt(attempt, message)
-    return bot.quordle_message.create_embed(message.author, attempt_details)
+    attempt_details = await submit_attempt(attempt, message)
+    return bot.quordle_message.create_embed(attempt_details, message.author)
 
 async def handle_wordle(message: Message) -> Embed:
     attempt = WordleAttemptParser(message.content)
-    attempt_details = submit_attempt(attempt, message)
-    return bot.wordle_message.create_embed(message.author, attempt_details)
+    attempt_details = await submit_attempt(attempt, message)
+    return bot.wordle_message.create_embed(attempt_details, message.author)
 
 async def submit_attempt(attempt: AttemptParser, message: Message):
     attempt_details = attempt.parse()
@@ -59,10 +60,10 @@ async def submit_attempt(attempt: AttemptParser, message: Message):
     except AttemptDuplication as ad:
         cheat_str = f"{ad.username} trying to submit attempt for day {ad.day} again... CHEAT"
         await message.channel.send(cheat_str)
-        return # TODO Replace with error embeds
+        return # TODO Replace with error embeds, then can remove async wrappers
     return attempt_details
 
-async def get_leaderboard() -> Embed:
+async def get_leaderboard(message) -> Embed:
     return bot.leaderboard.get_leaderboard()
 
 if __name__ == "__main__": # pragma: no cover

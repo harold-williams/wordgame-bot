@@ -36,3 +36,9 @@ def invalid_message():
     message = AsyncMock()
     message.channel.id = -1
     return message
+
+@pytest.fixture
+def mock_parser():
+    mock_parser = MagicMock()
+    mock_parser.parse.return_value = MagicMock()
+    return mock_parser
