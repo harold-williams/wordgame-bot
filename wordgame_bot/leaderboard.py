@@ -54,7 +54,7 @@ class AttemptDuplication(Exception):
 
 class Leaderboard:
     def __init__(self, conn) -> None:
-        self.conn = conn
+        self.conn: psycopg2.connection = conn
         self.scores: list[Score] = []
         self.create_table()
 
@@ -100,7 +100,8 @@ class Leaderboard:
     def retrieve_scores(self):
         self.scores = []
         with self.conn.cursor() as curs:
-            retrieved_scores = curs.execute(LEADERBOARD_SCHEMA)
+            curs.execute(LEADERBOARD_SCHEMA)
+            retrieved_scores = curs.fetchall()
             for score in retrieved_scores:
                 self.scores.append(score)
             self.conn.commit()

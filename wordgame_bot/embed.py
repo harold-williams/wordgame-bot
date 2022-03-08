@@ -28,6 +28,7 @@ FAILURE_THUMBNAILS = (
 WORDGAME_LINKS = (
     "Wordle: https://www.nytimes.com/games/wordle/index.html\n"
     "Quordle: https://www.quordle.com/#/\n"
+    "Octordle: https://octordle.com/?mode=daily\n"
 )
 
 
