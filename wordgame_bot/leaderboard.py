@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """
 LEADERBOARD_SCHEMA = """
-SELECT username, total 
+SELECT username, total
 FROM (
     SELECT
         user_id,
@@ -57,7 +57,7 @@ class Leaderboard:
         self.conn = conn
         self.scores: list[Score] = []
         self.create_table()
-    
+
     def create_table(self):
         with self.conn.cursor() as curs:
             curs.execute(CREATE_TABLE_SCHEMA)
@@ -71,7 +71,7 @@ class Leaderboard:
                     "INSERT INTO attempts(user_id, mode, day, score) "
                     "VALUES ("
                       f"{user.id},"
-                      f"{attempt.gamemode},"
+                      f"'{attempt.gamemode}',"
                       f"{attempt.info.day},"
                       f"{attempt.score}"
                     ")",
@@ -106,7 +106,7 @@ class Leaderboard:
             self.conn.commit()
 
     def get_ranks_table(self):
-        self.scores.sort(key=lambda x: x[1], reverse=True) 
+        self.scores.sort(key=lambda x: x[1], reverse=True)
         ranks = "\n".join(
             f"{self.get_rank_value(rank)}. {user} -- {score}"
             for rank, (user, score) in enumerate(self.scores)
