@@ -6,17 +6,23 @@ from datetime import date
 import re
 
 from wordgame_bot.attempt import Attempt, AttemptParser
-from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
+from wordgame_bot.exceptions import InvalidFormatError, InvalidScore, ParsingError
 from wordgame_bot.guess import GuessInfo, Guesses
 
-INCORRECT_GUESS_SCORE = 12
+INCORRECT_GUESS_SCORE = 15
+SCORE_MAP = {
+    "🔟": 10,
+    "🕚": 11,
+    "🕛": 12,
+    "🕐": 13,
+}
 
 @dataclass
-class QuordleAttemptParser(AttemptParser):
+class OctordleAttemptParser(AttemptParser):
     attempt: str
     error: str = "" # TODO
 
-    def parse(self) -> QuordleAttempt:
+    def parse(self) -> OctordleAttempt:
         try:
             return self.parse_attempt()
         except ParsingError as e:
@@ -24,18 +30,18 @@ class QuordleAttemptParser(AttemptParser):
 
     def parse_attempt(self):
         lines = self.get_lines()
-        info = QuordleGuessInfo("\n".join(lines[0:3]))
-        words = self.extract_words(lines[3:])
+        info = OctordleGuessInfo("\n".join(lines[0:5]))
+        words = self.extract_words(lines[5:])
         for word_num, word in enumerate(words):
             if info.scores[word_num] != word.correct_guess:
                 raise InvalidScore(info.score) # TODO This should be moved inside attempt as not a parsing error is an attempt error.
-        return QuordleAttempt(info, words)
+        return OctordleAttempt(info, words)
 
     def get_lines(self):
         lines = [line.strip() for line in self.attempt.split("\n")]
-        if "quordle.com" in lines:
-            lines.remove("quordle.com")
-        if len(lines) <= 9 or len(lines) > 23:
+        if "octordle.com" in lines:
+            lines.remove("octordle.com")
+        if len(lines) <= 28 or len(lines) > 60:
             raise InvalidFormatError(self.attempt)
         return lines
 
@@ -64,14 +70,14 @@ class QuordleAttemptParser(AttemptParser):
 
 
 @dataclass
-class QuordleGuessInfo(GuessInfo):
+class OctordleGuessInfo(GuessInfo):
     scores: list = field(default_factory=list)
     creation_day: date = date(2022, 1, 24)
-    valid_format = re.compile("^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$")
+    valid_format = re.compile("^Daily Octordle #[0-9]+\n[1-9🔟🕚🕛🕐🟥][1-9🔟🕚🕛🕐🟥]\n[1-9🔟🕚🕛🕐🟥][1-9🔟🕚🕛🕐🟥]\n[1-9🔟🕚🕛🕐🟥][1-9🔟🕚🕛🕐🟥]\n[1-9🔟🕚🕛🕐🟥][1-9🔟🕚🕛🕐🟥]$")
 
     @property
     def bonus_points(self):
-        all_correct = all(score != '🟥' for score in self.scores)
+        all_correct = all(score != INCORRECT_GUESS_SCORE for score in self.scores)
         return -1 if all_correct else 0 # TODO THIS SHOULD BE MOVED TO QUORDLE ATTEMPT AS OTHERWISE INVERSION + WHY IT IS HERE IS CONFUSING
 
     def validate_format(self):
@@ -83,6 +89,7 @@ class QuordleGuessInfo(GuessInfo):
         self.info = self.info.strip()
         for bad_char in ('\ufe0f', '\u20e3'):
             self.info = self.info.replace(bad_char, '')
+        print(self.info)
 
     def extract_day_and_score(self):
         info_parts = self.info.split('\n')
@@ -99,20 +106,23 @@ class QuordleGuessInfo(GuessInfo):
             if score == "🟥":
                 self.scores[score_num] = INCORRECT_GUESS_SCORE
             else:
-                self.scores[score_num] = int(score)
-
+                score_value = SCORE_MAP.get(score)
+                if score_value is None:
+                    score_value = int(score)
+                self.scores[score_num] = score_value
+        print(self.bonus_points)
         return sum(self.scores) + self.bonus_points
 
     def validate_scores(self):
-        if len(self.scores) != 4:
-            raise InvalidScore("Must supply 4 scores")
+        if len(self.scores) != 8:
+            raise InvalidScore("Must supply 8 scores")
         prev_scores = set()
         for score in self.scores:
             try:
                 assert len(score) == 1
-                assert score in "123456789🟥"
+                assert score in "123456789🔟🕚🕛🕐🟥"
                 if score != "🟥":
-                    print(prev_scores)
+
                     assert score not in prev_scores
                     prev_scores.add(score)
             except AssertionError:
@@ -120,10 +130,10 @@ class QuordleGuessInfo(GuessInfo):
 
 
 @dataclass
-class QuordleAttempt(Attempt):
+class OctordleAttempt(Attempt):
     @property
     def maxscore(self):
-        return 50
+        return 120
 
     @property
     def score(self):
@@ -131,4 +141,4 @@ class QuordleAttempt(Attempt):
 
     @property
     def gamemode(self):
-        return "Q"
+        return "O"

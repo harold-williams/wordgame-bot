@@ -1,3 +1,4 @@
+import logging
 import os
 
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ async def on_ready(): # pragma: no cover
 async def on_message(message: Message):
     embed = None
     if message.channel.id == 944748500787269653:
+        logging.error(message.content)
         if message.content.startswith('Wordle ') and "/6" in message.content:
             embed = await handle_wordle(message)
         elif message.content.startswith('Daily Quordle #'):
@@ -67,6 +69,6 @@ async def get_leaderboard(message) -> Embed:
     return bot.leaderboard.get_leaderboard()
 
 if __name__ == "__main__": # pragma: no cover
-    with connect_to_leaderboard() as leaderboard:
-        bot.leaderboard = leaderboard
-        bot.run(TOKEN)
+    # with connect_to_leaderboard() as leaderboard:
+        # bot.leaderboard = leaderboard
+    bot.run(TOKEN)
