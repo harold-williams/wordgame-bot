@@ -79,8 +79,8 @@ class WordleGuessInfo(GuessInfo):
 @dataclass
 class WordleAttempt(Attempt):
     @property
-    def score(self):
-        return 10 - self.info.score
+    def maxscore(self):
+        return 10
 
     @property
     def gamemode(self):

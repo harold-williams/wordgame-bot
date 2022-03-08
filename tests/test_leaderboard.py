@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import psycopg2
+from discord import User
 from wordgame_bot.leaderboard import CREATE_TABLE_SCHEMA, LEADERBOARD_SCHEMA, AttemptDuplication, Leaderboard, Score, connect_to_leaderboard
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
@@ -14,7 +15,7 @@ def test_create_table_on_instantiation():
     execute: MagicMock = mocked_cursor.execute
     execute.assert_called_once_with(CREATE_TABLE_SCHEMA)
 
-def test_verify_new_user(leaderboard: Leaderboard, user):
+def test_verify_new_user(leaderboard: Leaderboard, user: User):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
     execute: MagicMock = mocked_cursor.execute
     fetchone: MagicMock = mocked_cursor.fetchone
@@ -28,7 +29,7 @@ def test_verify_new_user(leaderboard: Leaderboard, user):
         f"INSERT INTO users(user_id, username) VALUES ({user.id}, {user.name})"
     )
 
-def test_verify_preexisting_user(leaderboard: Leaderboard, user):
+def test_verify_preexisting_user(leaderboard: Leaderboard, user: User):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
     execute: MagicMock = mocked_cursor.execute
     fetchone: MagicMock = mocked_cursor.fetchone
@@ -123,7 +124,7 @@ def test_get_leaderboard(leaderboard: Leaderboard):
         ),
     ]
 )
-def test_insert_valid_submission(leaderboard: Leaderboard, user, attempt):
+def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
     execute: MagicMock = mocked_cursor.execute
     leaderboard.verify_valid_user = MagicMock()
@@ -151,7 +152,7 @@ def test_insert_valid_submission(leaderboard: Leaderboard, user, attempt):
         ),
     ]
 )
-def test_insert_invalid_submission(leaderboard: Leaderboard, user, attempt):
+def test_insert_invalid_submission(leaderboard: Leaderboard, user: User, attempt):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
     execute: MagicMock = mocked_cursor.execute
     execute.side_effect = psycopg2.errors.UniqueViolation

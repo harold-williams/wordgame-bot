@@ -48,8 +48,6 @@ class QuordleAttemptParser(AttemptParser):
             for word in self.split_words(words):
                 guess_list.append(Guesses(word, INCORRECT_GUESS_SCORE))
 
-        for word_num, word in enumerate(guess_list):
-            print(f"{word_num}: {word} - {word.correct_guess}")
         return guess_list
 
     def split_words(self, combined_words):
@@ -126,8 +124,12 @@ class QuordleGuessInfo(GuessInfo):
 @dataclass
 class QuordleAttempt(Attempt):
     @property
+    def maxscore(self):
+        return 50
+
+    @property
     def score(self):
-        return 50 - self.info.score
+        return self.maxscore - self.info.score
 
     @property
     def gamemode(self):
