@@ -1,1 +1,1 @@
-worker: poetry run python wordgame_bot/bot.py
+worker: $HOME/.poetry/bin/poetry run python wordgame_bot/bot.py
