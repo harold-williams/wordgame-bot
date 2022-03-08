@@ -190,8 +190,6 @@ def test_error_connecting_to_leaderboard(connect: MagicMock):
     Leaderboard.__init__ = MagicMock(side_effect = Exception)
     with pytest.raises(Exception):
         with connect_to_leaderboard() as leaderboard:
-            connect.assert_called_once()
-            assert leaderboard.conn == mock_conn
-            mock_conn.close.assert_not_called()
-
+            pass
+    connect.assert_called_once()
     mock_conn.close.assert_called_once()
