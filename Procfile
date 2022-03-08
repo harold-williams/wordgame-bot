@@ -1,1 +1,1 @@
-worker: source $HOME/.poetry/env; poetry run python wordgame_bot/bot.py
+worker: python wordgame_bot/bot.py
