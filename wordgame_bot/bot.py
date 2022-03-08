@@ -1,17 +1,15 @@
-import logging
 import os
 
 from dotenv import load_dotenv
 from discord import Message
 from discord.ext import commands
-from wordgame_bot.embed import EmbedCreator
+from wordgame_bot.embed import QuordleMessage, WordleMessage
 from wordgame_bot.quordle import QuordleAttemptParser
 from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard, connect_to_leaderboard
-from wordgame_bot.wordle import ParsingError, WordleAttemptParser
+from wordgame_bot.wordle import WordleAttemptParser
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-
 
 
 class QuordleBot(commands.Bot):
@@ -23,7 +21,8 @@ class QuordleBot(commands.Bot):
 
     def __init__(self, command_prefix, description=None, **options):
         self.leaderboard: Leaderboard | None = None
-        self.embed_creator: EmbedCreator = EmbedCreator() 
+        self.wordle_message: WordleMessage = WordleMessage()
+        self.quordle_message: QuordleMessage = QuordleMessage()
         super().__init__(command_prefix, self._help_command, description, **options)
 
 bot = QuordleBot(command_prefix='-')
@@ -40,39 +39,34 @@ async def on_message(message: Message):
             await submit_wordle(message)
         elif message.content.startswith('Daily Quordle #'):
             await submit_quordle(message)
-        elif message.content.lower() == "leaderboard":
+        elif message.content.lower() in ("leaderboard", "l"):
             await get_leaderboard(message)
 
-async def submit_quordle(message):
+async def submit_quordle(message: Message):
     attempt = QuordleAttemptParser(message.content)
-    attempt.parse()
-    attempt.validate_guesses()
+    attempt_details = attempt.parse()
     try:
-        bot.leaderboard.insert_submission(attempt.attempt_details, message.author)
+        bot.leaderboard.insert_submission(attempt_details, message.author)
     except AttemptDuplication as ad:
         cheat_str = f"{ad.username} trying to submit attempt for day {ad.day} again... CHEAT"
         await message.channel.send(cheat_str)
         return
 
-    embed = bot.embed_creator.create_quordle_embed(message.author, attempt.attempt_details)
+    embed = bot.quordle_message.create_embed(message.author, attempt_details)
     await message.channel.send(embed=embed)
 
-async def submit_wordle(message):
+async def submit_wordle(message: Message):
+    attempt = WordleAttemptParser(message.content)
+    attempt_details = attempt.parse()
     try:
-        attempt = WordleAttemptParser(message.content)
-        attempt_details = attempt.parse()
-        bot.leaderboard.insert_wordle(attempt_details, message.author)
-        embed = bot.embed_creator.create_wordle_embed(message.author, attempt_details)
-        await message.channel.send(embed=embed)
-
-    except ParsingError as pe:
-        await message.channel.send(attempt.error_message())
-        return
-
+        bot.leaderboard.insert_submission(attempt_details, message.author)
     except AttemptDuplication as ad:
         cheat_str = f"{ad.username} trying to submit attempt for day {ad.day} again... CHEAT"
         await message.channel.send(cheat_str)
         return
+
+    embed = bot.wordle_message.create_embed(message.author, attempt_details)
+    await message.channel.send(embed=embed)
 
 async def get_leaderboard(message: Message):
     leaderboard = bot.leaderboard.get_leaderboard()

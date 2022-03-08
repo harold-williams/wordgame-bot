@@ -31,7 +31,7 @@ WORDGAME_LINKS = (
 )
 
 
-class EmbedCreator:
+class MessageCreator:
     def create_embed(self, user: User, attempt: Attempt) -> Embed:
         w_embed = Embed(
             title = self.title,
@@ -50,7 +50,7 @@ class EmbedCreator:
 
 
 @dataclass
-class QuordleEmbed(EmbedCreator):
+class QuordleMessage(MessageCreator):
     threshold: int = 25
     title: str = "🧠 Quordle Submission 🧠"
     colour: Colour = Colour.gold()
@@ -61,7 +61,7 @@ class QuordleEmbed(EmbedCreator):
 
 
 @dataclass
-class WordleEmbed(EmbedCreator):
+class WordleMessage(MessageCreator):
     threshold: int = 6
     title: str = "🤠 Wordle Submission 🤠"
     colour: Colour = Colour.dark_red()
