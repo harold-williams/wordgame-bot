@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from discord import Message, Embed
 from discord.ext import commands
 from wordgame_bot.attempt import Attempt, AttemptParser
-from wordgame_bot.embed import QuordleMessage, WordleMessage
+from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
+from wordgame_bot.octordle import OctordleAttemptParser
 from wordgame_bot.quordle import QuordleAttemptParser
 from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard, connect_to_leaderboard
 from wordgame_bot.wordle import WordleAttemptParser
@@ -19,6 +20,7 @@ class WordgameBot(commands.Bot):
         self.leaderboard: Leaderboard | None = None
         self.wordle_message: WordleMessage = WordleMessage()
         self.quordle_message: QuordleMessage = QuordleMessage()
+        self.octordle_message: OctordleMessage = OctordleMessage()
         super().__init__(command_prefix, description, **options)
 
 bot = WordgameBot(command_prefix='-')
@@ -35,8 +37,9 @@ async def on_message(message: Message):
         logging.error(message.content)
         if message.content.startswith('Wordle ') and "/6" in message.content:
             embed = await handle_wordle(message)
+        elif message.content.startswith('Daily Octordle #'):
+            embed = await handle_octordle(message)
         elif message.content.startswith('Daily Quordle #'):
-            print("handling")
             embed = await handle_quordle(message)
         elif message.content.split(" ")[0] in ("leaderboard", "l"):
             embed = await get_leaderboard(message)
@@ -54,6 +57,11 @@ async def handle_wordle(message: Message) -> Embed:
     attempt = WordleAttemptParser(message.content)
     attempt_details = await submit_attempt(attempt, message)
     return bot.wordle_message.create_embed(attempt_details, message.author)
+
+async def handle_octordle(message: Message) -> Embed:
+    attempt = OctordleAttemptParser(message.content)
+    attempt_details = await submit_attempt(attempt, message)
+    return bot.octordle_message.create_embed(attempt_details, message.author)
 
 async def submit_attempt(attempt: AttemptParser, message: Message):
     attempt_details = attempt.parse()

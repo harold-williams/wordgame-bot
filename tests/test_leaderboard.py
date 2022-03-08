@@ -6,6 +6,7 @@ import pytest
 import psycopg2
 from discord import User
 from wordgame_bot.leaderboard import CREATE_TABLE_SCHEMA, LEADERBOARD_SCHEMA, AttemptDuplication, Leaderboard, Score, connect_to_leaderboard
+from wordgame_bot.octordle import OctordleAttempt
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
 
@@ -122,6 +123,10 @@ def test_get_leaderboard(leaderboard: Leaderboard):
             info = MagicMock(day = 5, score = 2),
             guesses = MagicMock()
         ),
+        OctordleAttempt(
+            info = MagicMock(day = 5, score = 2),
+            guesses = MagicMock()
+        ),
     ]
 )
 def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
@@ -147,6 +152,10 @@ def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
             guesses = MagicMock()
         ),
         WordleAttempt(
+            info = MagicMock(day = 5, score = 2),
+            guesses = MagicMock()
+        ),
+        OctordleAttempt(
             info = MagicMock(day = 5, score = 2),
             guesses = MagicMock()
         ),

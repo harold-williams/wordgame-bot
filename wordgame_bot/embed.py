@@ -71,6 +71,17 @@ class WordleMessage(MessageCreator):
     })
 
 
+@dataclass
+class OctordleMessage(MessageCreator):
+    threshold: int = 51
+    title: str = "🤓🍏 Octordle Submission 🤓🍏"
+    colour: Colour = Colour.green()
+    author: dict[str, str] = field(default_factory=lambda: {
+        "name" : "OctordleParser",
+        "icon_url" : "https://www.egames.news/__export/1645898819912/sites/debate/img/2022/02/26/octopsycho.jpg_415429280.jpg"
+    })
+
+
 def get_congratulations_thumbnail():
     return random.choice(SUCCESS_THUMBNAILS)
 

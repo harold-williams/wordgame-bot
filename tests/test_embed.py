@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
-from wordgame_bot.embed import FAILURE_THUMBNAILS, SUCCESS_THUMBNAILS, QuordleMessage, WordleMessage
+from wordgame_bot.embed import FAILURE_THUMBNAILS, SUCCESS_THUMBNAILS, OctordleMessage, QuordleMessage, WordleMessage
 from discord import Colour, Embed, User
+from wordgame_bot.octordle import OctordleAttempt
 from wordgame_bot.quordle import QuordleAttempt
 
 from wordgame_bot.wordle import WordleAttempt
@@ -35,4 +36,20 @@ def test_quordle_embed_bad_score(user: User):
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "QuordleParser"
     assert embed_values["title"] == "🧠 Quordle Submission 🧠"
+    assert embed_values["thumbnail"]["url"] in FAILURE_THUMBNAILS
+
+def test_octordle_embed_good_score(user: User):
+    attempt = OctordleAttempt(info=MagicMock(day=4, score=23), guesses=MagicMock())
+    embed = OctordleMessage().create_embed(attempt, user)
+    embed_values = embed.to_dict()
+    assert embed_values["author"]["name"] == "OctordleParser"
+    assert embed_values["title"] == "🤓🍏 Octordle Submission 🤓🍏"
+    assert embed_values["thumbnail"]["url"] in SUCCESS_THUMBNAILS
+
+def test_octordle_embed_bad_score(user: User):
+    attempt = OctordleAttempt(info=MagicMock(day=4, score=78), guesses=MagicMock())
+    embed = OctordleMessage().create_embed(attempt, user)
+    embed_values = embed.to_dict()
+    assert embed_values["author"]["name"] == "OctordleParser"
+    assert embed_values["title"] == "🤓🍏 Octordle Submission 🤓🍏"
     assert embed_values["thumbnail"]["url"] in FAILURE_THUMBNAILS

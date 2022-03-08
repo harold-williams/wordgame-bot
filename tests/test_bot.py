@@ -8,6 +8,46 @@ from wordgame_bot.bot import on_message, submit_attempt
 from wordgame_bot.leaderboard import AttemptDuplication
 
 VALID_CHANNEL = 944748500787269653
+OCTORDLE_MESSAGE = (
+    "Daily Octordle #42\n"
+    "3️⃣4️⃣\n"
+    "🔟🕛\n"
+    "2️⃣6️⃣\n"
+    "1️⃣7️⃣\n"
+    "octordle.com\n"
+    "🟨⬜⬜⬜🟨 ⬜🟨⬜⬜⬜\n"
+    "⬜🟨⬜⬜🟨 ⬜⬜🟨⬜⬜\n"
+    "🟩🟩🟩🟩🟩 🟩⬜⬜⬜⬜\n"
+    "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩\n"
+    "\n"
+    "⬜⬜⬜🟨⬜ 🟨⬜⬜⬜🟨\n"
+    "⬜⬜⬜🟨⬜ ⬜⬜⬜⬜🟨\n"
+    "⬜⬜⬜⬜🟨 ⬜🟨⬜🟨⬜\n"
+    "⬜⬜🟨⬜⬜ ⬜⬜⬜⬜🟩\n"
+    "⬜⬜⬜⬜⬜ ⬜⬜⬜⬜⬜\n"
+    "⬜⬜⬜⬜⬜ ⬜⬜⬜⬜⬜\n"
+    "⬜⬜⬜⬜⬜ ⬜⬜⬜🟨⬜\n"
+    "🟨🟨🟨⬜⬜ ⬜⬜⬜⬜⬜\n"
+    "🟩⬜🟩⬜⬜ 🟨⬜⬜⬜🟨\n"
+    "🟩🟩🟩🟩🟩 🟨⬜⬜⬜⬜\n"
+    "⬛⬛⬛⬛⬛ 🟨🟩🟩🟨🟩\n"
+    "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩\n"
+    "\n"
+    "⬜⬜🟩🟩🟩 ⬜🟨⬜⬜⬜\n"
+    "🟩🟩🟩🟩🟩 ⬜🟨🟨⬜⬜\n"
+    "⬛⬛⬛⬛⬛ 🟩⬜🟨⬜⬜\n"
+    "⬛⬛⬛⬛⬛ 🟩⬜⬜🟩⬜\n"
+    "⬛⬛⬛⬛⬛ 🟩🟩🟨🟩⬜\n"
+    "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩\n"
+    "\n"
+    "🟩🟩🟩🟩🟩 🟨🟨🟨⬜⬜\n"
+    "⬛⬛⬛⬛⬛ ⬜🟩🟨⬜⬜\n"
+    "⬛⬛⬛⬛⬛ ⬜⬜🟨🟩⬜\n"
+    "⬛⬛⬛⬛⬛ ⬜⬜⬜🟨⬜\n"
+    "⬛⬛⬛⬛⬛ ⬜⬜🟨🟨🟩\n"
+    "⬛⬛⬛⬛⬛ ⬜⬜⬜🟨🟨\n"
+    "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩"
+)
 QUORDLE_MESSAGE = (
     "Daily Quordle #17\n"
     "4️⃣🟥\n"
@@ -46,6 +86,10 @@ WORDLE_MESSAGE = (
     "content, expected_handler",
     [
         (
+            OCTORDLE_MESSAGE,
+            "handle_octordle",
+        ),
+        (
             QUORDLE_MESSAGE,
             "handle_quordle",
         ),
@@ -74,6 +118,10 @@ async def test_on_valid_message(valid_message: MagicMock, content: str, expected
 @pytest.mark.parametrize(
     "content, expected_handler",
     [
+        (
+            OCTORDLE_MESSAGE,
+            "handle_octordle",
+        ),
         (
             QUORDLE_MESSAGE,
             "handle_quordle",
@@ -146,3 +194,14 @@ async def test_handle_wordle(bot: MagicMock, valid_message: Message, mock_parser
     mock_details = mock_parser.parse.return_value
     bot.leaderboard.insert_submission.assert_called_once_with(mock_details, valid_message.author)
     bot.wordle_message.create_embed.assert_called_once_with(mock_details, valid_message.author)
+
+@patch('wordgame_bot.bot.bot')
+async def test_handle_octordle(bot: MagicMock, valid_message: Message, mock_parser: MagicMock):
+    valid_message.content = OCTORDLE_MESSAGE
+
+    with patch("wordgame_bot.bot.OctordleAttemptParser", return_value=mock_parser):
+        await on_message(valid_message)
+
+    mock_details = mock_parser.parse.return_value
+    bot.leaderboard.insert_submission.assert_called_once_with(mock_details, valid_message.author)
+    bot.octordle_message.create_embed.assert_called_once_with(mock_details, valid_message.author)
