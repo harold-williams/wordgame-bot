@@ -89,7 +89,6 @@ class OctordleGuessInfo(GuessInfo):
         self.info = self.info.strip()
         for bad_char in ('\ufe0f', '\u20e3'):
             self.info = self.info.replace(bad_char, '')
-        print(self.info)
 
     def extract_day_and_score(self):
         info_parts = self.info.split('\n')
@@ -110,7 +109,6 @@ class OctordleGuessInfo(GuessInfo):
                 if score_value is None:
                     score_value = int(score)
                 self.scores[score_num] = score_value
-        print(self.bonus_points)
         return sum(self.scores) + self.bonus_points
 
     def validate_scores(self):

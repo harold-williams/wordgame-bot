@@ -1,8 +1,12 @@
+from __future__ import annotations
+
+from contextlib import contextmanager
 import re
+from unittest.mock import patch
 import pytest
 from freezegun import freeze_time
 from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore
-from wordgame_bot.octordle import OctordleAttempt, OctordleAttemptParser
+from wordgame_bot.octordle import OctordleAttempt, OctordleAttemptParser, OctordleGuessInfo
 
 YESTERDAY_SUBMISSION = (
     "Daily Octordle #42\n"
@@ -103,6 +107,11 @@ TODAY_SUBMISSION = (
     "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩"
 )
 
+@contextmanager
+def remove_info_validation():
+    with patch('wordgame_bot.octordle.OctordleGuessInfo.__post_init__'):
+        yield
+
 @freeze_time("2022, 3, 8")
 @pytest.mark.parametrize(
     "attempt, expected_day, expected_score",
@@ -137,7 +146,6 @@ def replace_score(submission: str, new_scores: str):
         if any(tile in line for tile in valid_tiles):
             break
     new_submission += submission_lines[line_num:]
-    print(new_submission)
     return "\n".join(new_submission)
 
 @freeze_time("2022, 3, 8")
@@ -170,3 +178,22 @@ def test_parse_invalid_attempts(attempt: str, expected_error: Exception):
     parser = OctordleAttemptParser(attempt)
     with pytest.raises(expected_error):
         parser.parse()
+
+@pytest.mark.parametrize(
+"scores, expected_score",
+    [
+        (["8", "2", "4", "7", "3", "6", "9", "1"], 39),
+        (["🔟", "2", "🕐", "7", "🕚", "6", "🕛", "1"], 61),
+        (["🔟", "2", "🟥", "🟥", "🟥", "6", "🕛", "1"], 76),
+        (["3", "2", "🔟"], None),
+        (["1", "1", "1", "1", "1", "1", "1", "1"], None),
+        (["a", "b", "c", "d", "X", "X", "X", "X"], None),
+    ]
+)
+def test_parse_score(scores: list[str], expected_score: int | None):
+    with remove_info_validation():
+        guess_info = OctordleGuessInfo("", scores=scores)
+        try:
+            assert guess_info.parse_score() == expected_score
+        except InvalidScore:
+            assert expected_score is None
