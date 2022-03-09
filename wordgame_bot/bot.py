@@ -11,7 +11,7 @@ from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard, connect_to
 from wordgame_bot.wordle import WordleAttemptParser
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-
+VALID_CHANNELS = (944748500787269653)
 
 class WordgameBot(commands.Bot):
     def __init__(self, command_prefix, description=None, **options):
@@ -31,7 +31,9 @@ async def on_ready(): # pragma: no cover
 @bot.event
 async def on_message(message: Message):
     embed = None
-    if message.channel.id == 944748500787269653:
+    logging.error(message.content)
+    logging.error(message.channel.id)
+    if message.channel.id in VALID_CHANNELS:
         logging.error(message.content)
         if message.content.startswith('Wordle ') and "/6" in message.content:
             embed = await handle_wordle(message)

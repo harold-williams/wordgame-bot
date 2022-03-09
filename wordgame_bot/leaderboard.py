@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
+from datetime import datetime
 import os
 from typing import Tuple
 
 # from dotenv import load_dotenv
-from discord import Color, Embed, User
+from discord import Colour, Embed, User
 import psycopg2
 from wordgame_bot.attempt import Attempt
 
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS attempts (
     day INTEGER,
     score INTEGER,
     mode CHAR(1),
+    submission_date DATE,
     PRIMARY KEY (user_id, mode, day)
 );
 CREATE TABLE IF NOT EXISTS users (
@@ -67,14 +69,16 @@ class Leaderboard:
         self.verify_valid_user(user)
         try:
             with self.conn.cursor() as curs:
-                curs.execute(
-                    "INSERT INTO attempts(user_id, mode, day, score) "
-                    "VALUES ("
-                      f"{user.id},"
-                      f"'{attempt.gamemode}',"
-                      f"{attempt.info.day},"
-                      f"{attempt.score}"
-                    ")",
+                curs.execute("""
+                    INSERT INTO attempts(user_id, mode, day, score, submission_date)
+                    VALUES (%s, %s, %s, %s, %s)""",
+                    (
+                        user.id,
+                        attempt.gamemode,
+                        attempt.info.day,
+                        attempt.score,
+                        datetime.today(),
+                    )
                 )
                 self.conn.commit()
         except psycopg2.errors.UniqueViolation:
@@ -83,12 +87,13 @@ class Leaderboard:
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
-            curs.execute(f"SELECT * FROM users WHERE user_id = '{user.id}'")
+            curs.execute("SELECT * FROM users WHERE user_id = %s", user.id)
             if curs.fetchone() is not None:
                 return
             else:
                 curs.execute(
-                    f"INSERT INTO users(user_id, username) VALUES ({user.id}, '{user.name}')"
+                    "INSERT INTO users(user_id, username) VALUES (%s, %s)",
+                    (user.id, user.name)
                 )
                 self.conn.commit()
         return
@@ -128,7 +133,7 @@ class Leaderboard:
         ranks = self.get_ranks_table()
         embed = Embed(
             title = "🏆 Leaderboard 🏆",
-            color = Color.blue()
+            color = Colour.blue()
         )
         embed.set_author(name="OfficialStandings", icon_url="https://static.wikia.nocookie.net/spongebob/images/9/96/The_Two_Faces_of_Squidward_174.png/revision/latest?cb=20200923005328")
         embed.set_thumbnail(url="https://images.cdn.circlesix.co/image/2/1200/700/5/uploads/articles/podium-2-546b7f7bf3c7b.jpeg")

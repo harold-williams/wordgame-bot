@@ -45,7 +45,7 @@ class WordleAttemptParser(AttemptParser):
 @dataclass
 class WordleGuessInfo(GuessInfo):
     creation_day: date = date(2021, 6, 19)
-    valid_format = re.compile("^Wordle [0-9]+ [1-6X]\/6$")
+    valid_format = re.compile("^Wordle [0-9]+ [1-6X]/6$")
 
     def validate_format(self):
         self.info = self.info.strip()
