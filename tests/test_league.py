@@ -181,5 +181,5 @@ def test_get_rank_difference():
         (2, "paul"),
         (0, "tom"),
         (-2, "susan"),
-        (-1, "jenny"),
+        (0, "jenny"),
     ]

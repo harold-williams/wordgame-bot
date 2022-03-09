@@ -103,6 +103,17 @@ class League:
         with self.conn.cursor() as cursor:
             yield cursor
 
+    def get_rank_difference(self):
+        league_ranks = self.get_previous_league_ranks()
+        current_ranks = self.get_latest_league_ranks()
+        # TODO Make the league ranks a dictionary of users to rank/scores
+        rank_difference = []
+        for rank, user, _ in current_ranks:
+            for old_rank, league_user, _ in league_ranks:
+                if user == league_user:
+                    rank_difference.append((old_rank-rank, user))
+        return rank_difference
+
     def get_ranks_table(self):
         self.scores.sort(key=lambda x: x.get(datetime.today), reverse=True)
         ranks = "\n".join(
