@@ -112,7 +112,6 @@ class QuordleGuessInfo(GuessInfo):
                 assert len(score) == 1
                 assert score in "123456789🟥"
                 if score != "🟥":
-                    print(prev_scores)
                     assert score not in prev_scores
                     prev_scores.add(score)
             except AssertionError:

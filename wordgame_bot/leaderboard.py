@@ -83,12 +83,12 @@ class Leaderboard:
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
-            curs.execute(f"SELECT * FROM users WHERE user_id = {user.id}")
+            curs.execute(f"SELECT * FROM users WHERE user_id = '{user.id}'")
             if curs.fetchone() is not None:
                 return
             else:
                 curs.execute(
-                    f"INSERT INTO users(user_id, username) VALUES ({user.id}, {user.name})"
+                    f"INSERT INTO users(user_id, username) VALUES ({user.id}, '{user.name}')"
                 )
                 self.conn.commit()
         return
