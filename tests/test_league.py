@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from freezegun import freeze_time
 
-from wordgame_bot.league import League
+from wordgame_bot.league import League, NewEntry
 
 
 def test_get_today_scores():
@@ -113,12 +113,12 @@ def test_get_latest_league_ranks():
         "susan": {datetime(2022, 3, 8): 23},
     }
     ranks = league.get_latest_league_ranks()
-    assert ranks == [
-        (1, "paul", 67),
-        (2, "tom", 24),
-        (3, "susan", 23),
-        (4, "jenny", 6),
-    ]
+    assert ranks == {
+        "paul": (1, 67),
+        "tom": (2, 24),
+        "susan": (3, 23),
+        "jenny": (4, 6),
+    }
 
 @freeze_time(datetime(2022,3,11))
 def test_get_previous_league_ranks():
@@ -137,12 +137,12 @@ def test_get_previous_league_ranks():
         "susan": {datetime(2022, 3, 8): 23},
     }
     ranks = league.get_previous_league_ranks()
-    assert ranks == [
-        (1, "susan", 23),
-        (2, "tom", 19),
-        (3, "paul", 16),
-        (4, "jenny", 6),
-    ]
+    assert ranks == {
+        "susan": (1, 23),
+        "tom": (2, 19),
+        "paul": (3, 16),
+        "jenny": (4, 6),
+    }
 
 @freeze_time(datetime(2022,3,11))
 def test_get_previous_league_ranks():
@@ -158,10 +158,10 @@ def test_get_previous_league_ranks():
         "susan": {datetime(2022, 3, 11): 23},
     }
     ranks = league.get_previous_league_ranks()
-    assert ranks == []
+    assert ranks == {}
 
 @freeze_time(datetime(2022,3,11))
-def test_get_rank_difference():
+def test_get_league_info():
     league = League(MagicMock())
     league.table = {
         "tom": {
@@ -176,10 +176,62 @@ def test_get_rank_difference():
         "jenny": {datetime(2022, 3, 7): 6},
         "susan": {datetime(2022, 3, 8): 23},
     }
-    differences = league.get_rank_difference()
-    assert differences == [
-        (2, "paul"),
-        (0, "tom"),
-        (-2, "susan"),
-        (0, "jenny"),
-    ]
+    info = league.get_league_info()
+    assert info == {
+        "paul": (1, 2, 67),
+        "tom": (2, 0, 24),
+        "susan": (3, -2, 23),
+        "jenny": (4, 0, 6),
+    }
+
+@freeze_time(datetime(2022,3,11))
+def test_get_league_info_with_new_entry():
+    league = League(MagicMock())
+    league.table = {
+        "tom": {
+            datetime(2022, 3, 9): 18,
+            datetime(2022, 3, 11): 5,
+            datetime(2022, 3, 7): 1,
+        },
+        "paul": {
+            datetime(2022, 3, 9): 16,
+            datetime(2022, 3, 11): 51,
+        },
+        "jenny": {datetime(2022, 3, 7): 6},
+        "susan": {datetime(2022, 3, 8): 23},
+        "graham": {datetime(2022, 3, 11): 31},
+    }
+    info = league.get_league_info()
+    expected = {
+        "paul": (1, 2, 67),
+        "graham": (2, NewEntry(), 31),
+        "tom": (3, -1, 24),
+        "susan": (4, -3, 23),
+        "jenny": (5, -1, 6),
+    }
+    for user in expected:
+        assert user in expected
+        assert expected[user][0] == info[user][0]
+        if isinstance(expected[user][1], NewEntry):
+            assert isinstance(info[user][1], NewEntry)
+        else:
+            assert expected[user][1] == info[user][1]
+        assert expected[user][2] == info[user][2]
+
+def test_get_ranks_table():
+    league = League(MagicMock())
+    ranks = {
+        "paul": (1, 2, 67),
+        "graham": (2, NewEntry(), 31),
+        "tom": (3, -1, 24),
+        "susan": (4, -3, 23),
+        "jenny": (5, -1, 6),
+    }
+    table = league.get_ranks_table(ranks)
+    assert table == (
+        "🔼 🥇. paul -- 67\n"
+        "🟢 🥈. graham -- 31\n"
+        "🔽 🥉. tom -- 24\n"
+        "⏬  4. susan -- 23\n"
+        "🔽  5. jenny -- 6"
+    )
