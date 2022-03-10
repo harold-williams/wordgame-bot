@@ -157,10 +157,8 @@ class League:
             title = "🏆🏆🏆 League 🏆🏆🏆\n",
             color = Color.blue()
         )
-        embed.set_author(name="OfficialStandings", icon_url="https://static.wikia.nocookie.net/spongebob/images/9/96/The_Two_Faces_of_Squidward_174.png/revision/latest?cb=20200923005328")
-        embed.set_thumbnail(url="https://images.cdn.circlesix.co/image/2/1200/700/5/uploads/articles/podium-2-546b7f7bf3c7b.jpeg")
-        embed.add_field(name="Ranks", value=rank_table, inline=False)
-        embed.set_footer(text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html")
+        embed.set_thumbnail(url="https://preview.redd.it/m41lh2t0yvj81.png?auto=webp&s=2b3438c08fc12cdb496a7c5f716533c746932604")
+        embed.add_field(name="=-------------------------------------------=", value=rank_table, inline=False)
         return embed
 
 @contextmanager
