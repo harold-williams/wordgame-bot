@@ -40,7 +40,9 @@ FROM (
     FROM
         attempts AS a
     WHERE
-        submission_date >= %s
+        mode != 'O'
+        AND submission_date IS NOT NULL
+        AND submission_date >= %s
     GROUP BY
         user_id, submission_date
     ORDER BY total DESC
@@ -98,7 +100,7 @@ class League:
         ranks = [
             (
                 username,
-                sum([score for day, score in scores.items() if day != datetime.today()])
+                sum([score for day, score in scores.items() if day != datetime.today().date()])
             )
             for username, scores in self.table.items()
         ]
@@ -171,6 +173,6 @@ def connect_to_league() -> Generator[League]:
 
 if __name__ == "__main__":
     with connect_to_league() as league:
-        print(league.get_league_scores())
+        league.get_league_scores()
         info = league.get_league_info()
         print(league.get_ranks_table(info))
