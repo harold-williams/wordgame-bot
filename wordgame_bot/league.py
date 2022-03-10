@@ -3,12 +3,13 @@ from contextlib import contextmanager
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+import os
 from typing import Generator
 
 import psycopg2
 from discord import Color, Embed, User
 
-# from wordgame_bot.leaderboard import DATABASE_URL
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 SCORES = """
 SELECT username, submission_date, total
@@ -66,6 +67,7 @@ class League:
         return today - timedelta(days=today.weekday())
 
     def get_league_table(self):
+        self.get_league_scores()
         info = self.get_league_info()
         return self.format_league(info)
 
@@ -144,7 +146,7 @@ class League:
         elif diff > 0:
             return '🔼'
         elif diff == 0:
-            '▶️'
+            return '▶️'
         elif diff > -2:
             return '🔽'
         return '⏬'
@@ -161,10 +163,16 @@ class League:
         embed.set_footer(text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html")
         return embed
 
-# @contextmanager
-# def connect_to_league() -> Generator[League]:
-#     try:
-#         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-#         yield League(conn)
-#     finally:
-#         conn.close()
+@contextmanager
+def connect_to_league() -> Generator[League]:
+    try:
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        yield League(conn)
+    finally:
+        conn.close()
+
+if __name__ == "__main__":
+    with connect_to_league() as league:
+        print(league.get_league_scores())
+        info = league.get_league_info()
+        print(league.get_ranks_table(info))
