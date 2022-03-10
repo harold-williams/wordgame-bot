@@ -87,7 +87,7 @@ class Leaderboard:
 
     def verify_valid_user(self, user: User):
         with self.conn.cursor() as curs:
-            curs.execute("SELECT * FROM users WHERE user_id = %s", user.id)
+            curs.execute("SELECT * FROM users WHERE user_id = %s", (user.id,))
             if curs.fetchone() is not None:
                 return
             else:
