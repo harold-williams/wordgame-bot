@@ -8,7 +8,7 @@ from typing import Generator
 import psycopg2
 from discord import Color, Embed, User
 
-from wordgame_bot.leaderboard import DATABASE_URL
+# from wordgame_bot.leaderboard import DATABASE_URL
 
 SCORES = """
 SELECT username, submission_date, total
@@ -161,10 +161,10 @@ class League:
         embed.set_footer(text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html")
         return embed
 
-@contextmanager
-def connect_to_league() -> Generator[League]:
-    try:
-        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-        yield League(conn)
-    finally:
-        conn.close()
+# @contextmanager
+# def connect_to_league() -> Generator[League]:
+#     try:
+#         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+#         yield League(conn)
+#     finally:
+#         conn.close()
