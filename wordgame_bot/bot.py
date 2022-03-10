@@ -11,7 +11,7 @@ from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard, connect_to
 from wordgame_bot.wordle import WordleAttemptParser
 
 TOKEN = os.getenv('DISCORD_TOKEN')
-VALID_CHANNELS = (944748500787269653)
+VALID_CHANNELS = (944748500787269653,951133921461035088)
 
 class WordgameBot(commands.Bot):
     def __init__(self, command_prefix, description=None, **options):
