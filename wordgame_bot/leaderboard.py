@@ -10,6 +10,7 @@ from typing import Tuple
 from discord import Colour, Embed, User
 import psycopg2
 from wordgame_bot.attempt import Attempt
+from wordgame_bot.league import League
 
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
@@ -146,6 +147,6 @@ class Leaderboard:
 def connect_to_leaderboard() -> Leaderboard:
     try:
         conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-        yield Leaderboard(conn)
+        yield (League(conn), Leaderboard(conn))
     finally:
         conn.close()
