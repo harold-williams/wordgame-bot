@@ -72,7 +72,7 @@ class League:
     def get_today_scores(self):
         self.scores = {}
         with self.get_cursor() as curs:
-            curs.execute(SCORES, datetime.today())
+            curs.execute(SCORES, (datetime.today(),))
             retrieved_scores = curs.fetchall()
             for (user_id, score) in retrieved_scores:
                 self.scores[user_id] = score
@@ -81,7 +81,7 @@ class League:
     def get_league_scores(self):
         self.table = {}
         with self.get_cursor() as curs:
-            curs.execute(LEAGUE_TABLE, self.start_day)
+            curs.execute(LEAGUE_TABLE, (self.start_day,))
             retrieved_scores = curs.fetchall()
             for (user_id, day, score) in retrieved_scores:
                 self.table.setdefault(user_id, {})[day] = score
