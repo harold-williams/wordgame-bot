@@ -207,9 +207,9 @@ def test_wordle_get_lines(number_lines: int, expect_error: bool):
     parser = WordleAttemptParser(info)
     try:
         parser.get_lines()
-        assert expect_error == False
+        assert not expect_error
     except InvalidFormatError:
-        assert expect_error == True
+        assert expect_error
 
 
 @freeze_time("2021, 6, 25")
@@ -308,7 +308,7 @@ def test_parse_invalid_attempts(attempt: str, expected_error: ParsingError):
     try:
         with pytest.raises(expected_error):
             parser.parse()
-    except Exception as e:
+    except Exception:
         pytest.fail()
 
 

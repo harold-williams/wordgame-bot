@@ -12,7 +12,6 @@ from wordgame_bot.exceptions import (
     InvalidScore,
 )
 from wordgame_bot.quordle import (
-    INCORRECT_GUESS_SCORE,
     QuordleAttempt,
     QuordleAttemptParser,
     QuordleGuessInfo,

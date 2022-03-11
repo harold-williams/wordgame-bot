@@ -1,11 +1,9 @@
-from unittest.mock import AsyncMock, MagicMock, create_autospec
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from discord import Message, User
+from discord import User
 
-from wordgame_bot.bot import WordgameBot
 from wordgame_bot.leaderboard import Leaderboard
-from wordgame_bot.wordle import WordleAttemptParser
 
 
 def create_user(username: str, id: int) -> User:

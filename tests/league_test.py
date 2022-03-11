@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
@@ -149,15 +149,15 @@ def test_get_previous_league_ranks():
     }
     ranks = league.get_previous_league_ranks()
     assert ranks == {
-        "susan": (1, 23),
-        "tom": (2, 19),
-        "paul": (3, 16),
-        "jenny": (4, 6),
+        "susan": 1,
+        "tom": 2,
+        "paul": 3,
+        "jenny": 4,
     }
 
 
 @freeze_time(datetime(2022, 3, 11))
-def test_get_previous_league_ranks():
+def test_get_previous_league_ranks_only_today():
     league = League(MagicMock())
     league.table = {
         "tom": {

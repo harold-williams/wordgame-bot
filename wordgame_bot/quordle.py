@@ -7,7 +7,6 @@ from datetime import date
 
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import (
-    InvalidDay,
     InvalidFormatError,
     InvalidScore,
     ParsingError,

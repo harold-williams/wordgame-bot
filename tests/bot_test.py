@@ -198,7 +198,7 @@ async def test_submit_duplicate_attempt(valid_message: Message):
         mock_details,
         valid_message.author,
     )
-    assert result == None
+    assert result is None
 
 
 async def test_get_leaderboard(valid_message: Message):

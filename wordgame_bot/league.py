@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 import psycopg2
-from discord import Color, Embed, User
+from discord import Color, Embed
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -115,7 +115,6 @@ class League:
             )
             for username, scores in self.table.items()
         ]
-        print(ranks)
         ranks.sort(key=lambda x: x[1], reverse=True)
         return {
             user: rank + 1

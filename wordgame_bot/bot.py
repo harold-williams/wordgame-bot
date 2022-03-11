@@ -4,7 +4,7 @@ import os
 from discord import Embed, Message
 from discord.ext import commands
 
-from wordgame_bot.attempt import Attempt, AttemptParser
+from wordgame_bot.attempt import AttemptParser
 from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
 from wordgame_bot.leaderboard import (
     AttemptDuplication,

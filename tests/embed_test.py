@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from discord import Colour, Embed, User
+from discord import User
 
 from wordgame_bot.embed import (
     FAILURE_THUMBNAILS,

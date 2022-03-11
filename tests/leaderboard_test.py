@@ -40,11 +40,11 @@ def test_verify_new_user(leaderboard: Leaderboard, user: User):
     leaderboard.verify_valid_user(user)
     fetchone.assert_called_once()
     execute.assert_any_call(
-        f"SELECT * FROM users WHERE user_id = %s",
+        "SELECT * FROM users WHERE user_id = %s",
         (user.id,),
     )
     execute.assert_any_call(
-        f"INSERT INTO users(user_id, username) VALUES (%s, %s)",
+        "INSERT INTO users(user_id, username) VALUES (%s, %s)",
         (user.id, user.name),
     )
 
@@ -58,7 +58,7 @@ def test_verify_preexisting_user(leaderboard: Leaderboard, user: User):
     fetchone.return_value = (user.id, user.name)
     leaderboard.verify_valid_user(user)
     execute.assert_called_once_with(
-        f"SELECT * FROM users WHERE user_id = %s",
+        "SELECT * FROM users WHERE user_id = %s",
         (user.id,),
     )
     fetchone.assert_called_once()
@@ -233,7 +233,7 @@ def test_error_connecting_to_leaderboard(connect: MagicMock):
     connect.return_value = mock_conn
     Leaderboard.__init__ = MagicMock(side_effect=Exception)
     with pytest.raises(Exception):
-        with connect_to_leaderboard() as leaderboard:
+        with connect_to_leaderboard() as _:
             pass
     connect.assert_called_once()
     mock_conn.close.assert_called_once()
