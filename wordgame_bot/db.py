@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
 import os
 from typing import Generator
@@ -7,8 +9,13 @@ from psycopg2._psycopg import connection, cursor
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 
+class NotConnected(Exception):
+    pass
+
+
 class DBConnection:
     url: str = DATABASE_URL
+    conn: connection | None = None
 
     @contextmanager
     def connect(self) -> Generator[connection, None, None]:
@@ -28,5 +35,8 @@ class DBConnection:
 
     @contextmanager
     def get_cursor(self) -> Generator[cursor, None, None]:
-        with self.conn.cursor() as cursor:
-            yield cursor
+        if self.conn is not None:
+            with self.conn.cursor() as cursor:
+                yield cursor
+        else:
+            raise NotConnected()
