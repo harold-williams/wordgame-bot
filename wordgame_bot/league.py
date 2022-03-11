@@ -93,7 +93,8 @@ class League:
 
     def get_latest_league_ranks(self):
         ranks = [
-            (username, sum(scores.values())) for username, scores in self.table.items()
+            (username, sum(scores.values()))
+            for username, scores in self.table.items()
         ]
         ranks.sort(key=lambda x: x[1], reverse=True)
         return {
@@ -106,14 +107,20 @@ class League:
         ranks = [
             (
                 username,
-                sum(score for day, score in scores.items() if day != date.today()),
+                sum(
+                    score
+                    for day, score in scores.items()
+                    if day != date.today()
+                ),
             )
             for username, scores in self.table.items()
         ]
         print(ranks)
         ranks.sort(key=lambda x: x[1], reverse=True)
         return {
-            user: rank + 1 for rank, (user, score) in enumerate(ranks) if score != 0
+            user: rank + 1
+            for rank, (user, score) in enumerate(ranks)
+            if score != 0
         }
 
     @contextmanager

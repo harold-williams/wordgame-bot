@@ -7,7 +7,6 @@ from datetime import datetime
 from typing import Tuple
 
 import psycopg2
-# from dotenv import load_dotenv
 from discord import Colour, Embed, User
 
 from wordgame_bot.attempt import Attempt
@@ -15,7 +14,6 @@ from wordgame_bot.league import League
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
 
-# load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 CREATE_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS attempts (

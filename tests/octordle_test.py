@@ -8,11 +8,13 @@ import pytest
 from freezegun import freeze_time
 
 from wordgame_bot.exceptions import (
-    InvalidDay, InvalidFormatError,
+    InvalidDay,
+    InvalidFormatError,
     InvalidScore,
 )
 from wordgame_bot.octordle import (
-    OctordleAttempt, OctordleAttemptParser,
+    OctordleAttempt,
+    OctordleAttemptParser,
     OctordleGuessInfo,
 )
 
@@ -138,7 +140,11 @@ def remove_info_validation():
         ),
     ],
 )
-def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
+def test_parse_valid_attempts(
+    attempt: str,
+    expected_score: int,
+    expected_day: int,
+):
     parser = OctordleAttemptParser(attempt)
     parsed_attempt = parser.parse()
     assert isinstance(parsed_attempt, OctordleAttempt)
@@ -171,8 +177,10 @@ def replace_score(submission: str, new_scores: str):
             InvalidScore,
         ),
         (
-            replace_score(TODAY_SUBMISSION, [
-                          "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣"]),
+            replace_score(
+                TODAY_SUBMISSION,
+                ["6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣"],
+            ),
             InvalidScore,
         ),
         (

@@ -75,7 +75,13 @@ QUORDLE_MESSAGE = (
     "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩"
 )
 WORDLE_MESSAGE = (
-    "Wordle 6 6/6\n" "⬜⬜⬜⬜⬜\n" "⬜⬜⬜🟨⬜\n" "🟨⬜⬜⬜🟨\n" "⬜🟨🟨🟨🟨\n" "🟩🟩🟩⬜🟩\n" "🟩🟩🟩🟩🟩\n"
+    "Wordle 6 6/6\n"
+    "⬜⬜⬜⬜⬜\n"
+    "⬜⬜⬜🟨⬜\n"
+    "🟨⬜⬜⬜🟨\n"
+    "⬜🟨🟨🟨🟨\n"
+    "🟩🟩🟩⬜🟩\n"
+    "🟩🟩🟩🟩🟩\n"
 )
 
 
@@ -210,7 +216,10 @@ async def test_handle_quordle(
 ):
     valid_message.content = QUORDLE_MESSAGE
 
-    with patch("wordgame_bot.bot.QuordleAttemptParser", return_value=mock_parser):
+    with patch(
+        "wordgame_bot.bot.QuordleAttemptParser",
+        return_value=mock_parser,
+    ):
         await on_message(valid_message)
 
     mock_details = mock_parser.parse.return_value
@@ -232,7 +241,10 @@ async def test_handle_wordle(
 ):
     valid_message.content = WORDLE_MESSAGE
 
-    with patch("wordgame_bot.bot.WordleAttemptParser", return_value=mock_parser):
+    with patch(
+        "wordgame_bot.bot.WordleAttemptParser",
+        return_value=mock_parser,
+    ):
         await on_message(valid_message)
 
     mock_details = mock_parser.parse.return_value
@@ -254,7 +266,10 @@ async def test_handle_octordle(
 ):
     valid_message.content = OCTORDLE_MESSAGE
 
-    with patch("wordgame_bot.bot.OctordleAttemptParser", return_value=mock_parser):
+    with patch(
+        "wordgame_bot.bot.OctordleAttemptParser",
+        return_value=mock_parser,
+    ):
         await on_message(valid_message)
 
     mock_details = mock_parser.parse.return_value

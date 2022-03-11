@@ -7,7 +7,8 @@ from discord.ext import commands
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
 from wordgame_bot.leaderboard import (
-    AttemptDuplication, Leaderboard,
+    AttemptDuplication,
+    Leaderboard,
     connect_to_leaderboard,
 )
 from wordgame_bot.league import League
@@ -83,9 +84,7 @@ async def submit_attempt(attempt: AttemptParser, message: Message):
     try:
         bot.leaderboard.insert_submission(attempt_details, message.author)
     except AttemptDuplication as ad:
-        cheat_str = (
-            f"{ad.username} trying to submit attempt for day {ad.day} again... CHEAT"
-        )
+        cheat_str = f"{ad.username} trying to submit attempt for day {ad.day} again... CHEAT"
         await message.channel.send(cheat_str)
         return  # TODO Replace with error embeds, then can remove async wrappers
     return attempt_details

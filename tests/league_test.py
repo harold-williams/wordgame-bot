@@ -9,7 +9,9 @@ from wordgame_bot.league import League, NewEntry
 
 def test_get_today_scores():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
+    mocked_cursor: MagicMock = (
+        league.conn.cursor.return_value.__enter__.return_value
+    )
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", 5),
@@ -45,7 +47,9 @@ def test_league_start_day(todays_date: date, expected_start: date):
 
 def test_get_league_scores():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
+    mocked_cursor: MagicMock = (
+        league.conn.cursor.return_value.__enter__.return_value
+    )
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", date(2022, 3, 11), 5),
@@ -74,7 +78,9 @@ def test_get_league_scores():
 
 def test_get_league_table():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
+    mocked_cursor: MagicMock = (
+        league.conn.cursor.return_value.__enter__.return_value
+    )
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", date(2022, 3, 11), 5),

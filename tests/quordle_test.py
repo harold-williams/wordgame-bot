@@ -7,12 +7,15 @@ import pytest
 from freezegun import freeze_time
 
 from wordgame_bot.exceptions import (
-    InvalidDay, InvalidFormatError,
+    InvalidDay,
+    InvalidFormatError,
     InvalidScore,
 )
 from wordgame_bot.quordle import (
-    INCORRECT_GUESS_SCORE, QuordleAttempt,
-    QuordleAttemptParser, QuordleGuessInfo,
+    INCORRECT_GUESS_SCORE,
+    QuordleAttempt,
+    QuordleAttemptParser,
+    QuordleGuessInfo,
 )
 
 
@@ -110,7 +113,11 @@ def remove_info_validation():
         ),
     ],
 )
-def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
+def test_parse_valid_attempts(
+    attempt: str,
+    expected_score: int,
+    expected_day: int,
+):
     parser = QuordleAttemptParser(attempt)
     parsed_attempt = parser.parse()
     assert isinstance(parsed_attempt, QuordleAttempt)

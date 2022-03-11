@@ -3,8 +3,11 @@ from unittest.mock import MagicMock
 from discord import Colour, Embed, User
 
 from wordgame_bot.embed import (
-    FAILURE_THUMBNAILS, SUCCESS_THUMBNAILS,
-    OctordleMessage, QuordleMessage, WordleMessage,
+    FAILURE_THUMBNAILS,
+    SUCCESS_THUMBNAILS,
+    OctordleMessage,
+    QuordleMessage,
+    WordleMessage,
 )
 from wordgame_bot.octordle import OctordleAttempt
 from wordgame_bot.quordle import QuordleAttempt
@@ -12,8 +15,10 @@ from wordgame_bot.wordle import WordleAttempt
 
 
 def test_wordle_embed_good_score(user: User):
-    attempt = WordleAttempt(info=MagicMock(
-        day=4, score=2), guesses=MagicMock())
+    attempt = WordleAttempt(
+        info=MagicMock(day=4, score=2),
+        guesses=MagicMock(),
+    )
     embed = WordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "WordleParser"
@@ -22,8 +27,10 @@ def test_wordle_embed_good_score(user: User):
 
 
 def test_wordle_embed_bad_score(user: User):
-    attempt = WordleAttempt(info=MagicMock(
-        day=4, score=8), guesses=MagicMock())
+    attempt = WordleAttempt(
+        info=MagicMock(day=4, score=8),
+        guesses=MagicMock(),
+    )
     embed = WordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "WordleParser"
@@ -32,8 +39,10 @@ def test_wordle_embed_bad_score(user: User):
 
 
 def test_quordle_embed_good_score(user: User):
-    attempt = QuordleAttempt(info=MagicMock(
-        day=4, score=18), guesses=MagicMock())
+    attempt = QuordleAttempt(
+        info=MagicMock(day=4, score=18),
+        guesses=MagicMock(),
+    )
     embed = QuordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "QuordleParser"
@@ -42,8 +51,10 @@ def test_quordle_embed_good_score(user: User):
 
 
 def test_quordle_embed_bad_score(user: User):
-    attempt = QuordleAttempt(info=MagicMock(
-        day=4, score=31), guesses=MagicMock())
+    attempt = QuordleAttempt(
+        info=MagicMock(day=4, score=31),
+        guesses=MagicMock(),
+    )
     embed = QuordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "QuordleParser"
@@ -52,8 +63,10 @@ def test_quordle_embed_bad_score(user: User):
 
 
 def test_octordle_embed_good_score(user: User):
-    attempt = OctordleAttempt(info=MagicMock(
-        day=4, score=23), guesses=MagicMock())
+    attempt = OctordleAttempt(
+        info=MagicMock(day=4, score=23),
+        guesses=MagicMock(),
+    )
     embed = OctordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "OctordleParser"
@@ -62,8 +75,10 @@ def test_octordle_embed_good_score(user: User):
 
 
 def test_octordle_embed_bad_score(user: User):
-    attempt = OctordleAttempt(info=MagicMock(
-        day=4, score=78), guesses=MagicMock())
+    attempt = OctordleAttempt(
+        info=MagicMock(day=4, score=78),
+        guesses=MagicMock(),
+    )
     embed = OctordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "OctordleParser"

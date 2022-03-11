@@ -22,3 +22,26 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+junit_family = "xunit2"
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["home_server"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 40
+
+[tool.coverage.html]
+directory = "coverage_html_report"
+
+[tool.black]
+line_length = 79
+target-version = ['py38']
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true

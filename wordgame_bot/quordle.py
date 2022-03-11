@@ -7,8 +7,10 @@ from datetime import date
 
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import (
-    InvalidDay, InvalidFormatError,
-    InvalidScore, ParsingError,
+    InvalidDay,
+    InvalidFormatError,
+    InvalidScore,
+    ParsingError,
 )
 from wordgame_bot.guess import Guesses, GuessInfo
 
@@ -74,7 +76,8 @@ class QuordleGuessInfo(GuessInfo):
     scores: list = field(default_factory=list)
     creation_day: date = date(2022, 1, 24)
     valid_format = re.compile(
-        "^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$")
+        "^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$",
+    )
 
     @property
     def bonus_points(self):

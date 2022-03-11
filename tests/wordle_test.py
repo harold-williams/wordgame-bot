@@ -7,12 +7,16 @@ import pytest
 from freezegun import freeze_time
 
 from wordgame_bot.exceptions import (
-    InvalidDay, InvalidFormatError,
-    InvalidScore, ParsingError,
+    InvalidDay,
+    InvalidFormatError,
+    InvalidScore,
+    ParsingError,
 )
 from wordgame_bot.wordle import (
-    INCORRECT_GUESS_SCORE, WordleAttempt,
-    WordleAttemptParser, WordleGuessInfo,
+    INCORRECT_GUESS_SCORE,
+    WordleAttempt,
+    WordleAttemptParser,
+    WordleGuessInfo,
 )
 
 
@@ -63,7 +67,11 @@ def test_invalid_info_format(info: str):
         ("Wordle 20 X/6", "20", "X"),
     ],
 )
-def test_extract_day_and_score(info: str, expected_day: int, expected_score: int):
+def test_extract_day_and_score(
+    info: str,
+    expected_day: int,
+    expected_score: int,
+):
     with remove_info_validation():
         guess_info = WordleGuessInfo(info)
         guess_info.extract_day_and_score()
@@ -247,7 +255,11 @@ def test_wordle_get_lines(number_lines: int, expect_error: bool):
         ),
     ],
 )
-def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
+def test_parse_valid_attempts(
+    attempt: str,
+    expected_score: int,
+    expected_day: int,
+):
     parser = WordleAttemptParser(attempt)
     parsed_attempt = parser.parse()
     assert isinstance(parsed_attempt, WordleAttempt)
@@ -274,9 +286,19 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
             InvalidFormatError,
         ),
         (("Score: 1000\n" "🟩⬛⬛🟨⬛\n" "🟩🟩⬛🟩🟩\n" "🟩🟩🟩🟩🟩\n"), InvalidFormatError),
-        (("Wordle 8 4/6\n" "⬛⬛⬛🟨⬛\n" "🟨🟨⬛🟩⬛\n" "⬛🟩🟩🟩🟨\n" "🟩🟩🟩🟩🟩\n"), InvalidDay),
         (
-            ("Wordle 6 2/6\n" "⬜⬜⬜⬜⬜\n" "⬜⬜⬜🟨⬜\n" "🟨⬜⬜⬜🟨\n" "🟩🟩🟩⬜🟩\n" "🟩🟩🟩🟩🟩\n"),
+            ("Wordle 8 4/6\n" "⬛⬛⬛🟨⬛\n" "🟨🟨⬛🟩⬛\n" "⬛🟩🟩🟩🟨\n" "🟩🟩🟩🟩🟩\n"),
+            InvalidDay,
+        ),
+        (
+            (
+                "Wordle 6 2/6\n"
+                "⬜⬜⬜⬜⬜\n"
+                "⬜⬜⬜🟨⬜\n"
+                "🟨⬜⬜⬜🟨\n"
+                "🟩🟩🟩⬜🟩\n"
+                "🟩🟩🟩🟩🟩\n"
+            ),
             InvalidScore,
         ),
     ],

@@ -7,7 +7,8 @@ from datetime import date
 
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import (
-    InvalidFormatError, InvalidScore,
+    InvalidFormatError,
+    InvalidScore,
     ParsingError,
 )
 from wordgame_bot.guess import Guesses, GuessInfo
@@ -86,7 +87,8 @@ class OctordleGuessInfo(GuessInfo):
     @property
     def bonus_points(self):
         all_correct = all(
-            score != INCORRECT_GUESS_SCORE for score in self.scores)
+            score != INCORRECT_GUESS_SCORE for score in self.scores
+        )
         return (
             -1 if all_correct else 0
         )  # TODO THIS SHOULD BE MOVED TO QUORDLE ATTEMPT AS OTHERWISE INVERSION + WHY IT IS HERE IS CONFUSING

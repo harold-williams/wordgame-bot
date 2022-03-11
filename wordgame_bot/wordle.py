@@ -7,8 +7,10 @@ from datetime import date
 
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import (
-    InvalidDay, InvalidFormatError,
-    InvalidScore, ParsingError,
+    InvalidDay,
+    InvalidFormatError,
+    InvalidScore,
+    ParsingError,
 )
 from wordgame_bot.guess import Guesses, GuessInfo
 
@@ -37,8 +39,9 @@ class WordleAttemptParser(AttemptParser):
         return WordleAttempt(info, guesses)
 
     def get_lines(self) -> list[str]:
-        lines = [line.strip()
-                 for line in self.attempt.split("\n") if line.strip()]
+        lines = [
+            line.strip() for line in self.attempt.split("\n") if line.strip()
+        ]
         if len(lines) <= 1 or len(lines) > 7:
             raise InvalidFormatError(self.attempt)
         return lines

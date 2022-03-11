@@ -9,8 +9,11 @@ from discord import User
 from freezegun import freeze_time
 
 from wordgame_bot.leaderboard import (
-    CREATE_TABLE_SCHEMA, LEADERBOARD_SCHEMA,
-    AttemptDuplication, Leaderboard, Score,
+    CREATE_TABLE_SCHEMA,
+    LEADERBOARD_SCHEMA,
+    AttemptDuplication,
+    Leaderboard,
+    Score,
     connect_to_leaderboard,
 )
 from wordgame_bot.octordle import OctordleAttempt
@@ -37,7 +40,9 @@ def test_verify_new_user(leaderboard: Leaderboard, user: User):
     leaderboard.verify_valid_user(user)
     fetchone.assert_called_once()
     execute.assert_any_call(
-        f"SELECT * FROM users WHERE user_id = %s", (user.id,))
+        f"SELECT * FROM users WHERE user_id = %s",
+        (user.id,),
+    )
     execute.assert_any_call(
         f"INSERT INTO users(user_id, username) VALUES (%s, %s)",
         (user.id, user.name),
@@ -90,7 +95,12 @@ def test_retrieve_scores(leaderboard: Leaderboard, retrieved: list[Score]):
                 ("User3", 12),
                 ("User4", 0),
             ],
-            ("🥇. User3 -- 12\n" "🥈. User2 -- 7\n" "🥉. User1 -- 4\n" "4. User4 -- 0"),
+            (
+                "🥇. User3 -- 12\n"
+                "🥈. User2 -- 7\n"
+                "🥉. User1 -- 4\n"
+                "4. User4 -- 0"
+            ),
         ),
         (
             [
@@ -122,8 +132,11 @@ def test_get_leaderboard(leaderboard: Leaderboard):
     leaderboard_contents = leaderboard_embed.to_dict()
     fields = leaderboard_contents.get("fields", [])
     assert len(fields) == 1
-    assert fields[0] == {"inline": False,
-                         "name": "Ranks", "value": "ranks_mock"}
+    assert fields[0] == {
+        "inline": False,
+        "name": "Ranks",
+        "value": "ranks_mock",
+    }
     assert leaderboard_contents.get("title", "") == "🏆 Leaderboard 🏆"
 
 
@@ -136,7 +149,11 @@ def test_get_leaderboard(leaderboard: Leaderboard):
         OctordleAttempt(info=MagicMock(day=5, score=2), guesses=MagicMock()),
     ],
 )
-def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
+def test_insert_valid_submission(
+    leaderboard: Leaderboard,
+    user: User,
+    attempt,
+):
     mocked_cursor: MagicMock = (
         leaderboard.conn.cursor.return_value.__enter__.return_value
     )
@@ -148,7 +165,13 @@ def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
     execute.assert_called_once_with(
         "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
         "VALUES (%s, %s, %s, %s, %s)",
-        (user.id, attempt.gamemode, attempt.info.day, attempt.score, datetime.now()),
+        (
+            user.id,
+            attempt.gamemode,
+            attempt.info.day,
+            attempt.score,
+            datetime.now(),
+        ),
     )
 
 
@@ -161,7 +184,11 @@ def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
         OctordleAttempt(info=MagicMock(day=5, score=2), guesses=MagicMock()),
     ],
 )
-def test_insert_invalid_submission(leaderboard: Leaderboard, user: User, attempt):
+def test_insert_invalid_submission(
+    leaderboard: Leaderboard,
+    user: User,
+    attempt,
+):
     mocked_cursor: MagicMock = (
         leaderboard.conn.cursor.return_value.__enter__.return_value
     )
@@ -175,7 +202,13 @@ def test_insert_invalid_submission(leaderboard: Leaderboard, user: User, attempt
     execute.assert_called_once_with(
         "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
         "VALUES (%s, %s, %s, %s, %s)",
-        (user.id, attempt.gamemode, attempt.info.day, attempt.score, datetime.now()),
+        (
+            user.id,
+            attempt.gamemode,
+            attempt.info.day,
+            attempt.score,
+            datetime.now(),
+        ),
     )
     assert duplication_error.value.username == user.name
     assert duplication_error.value.day == attempt.info.day

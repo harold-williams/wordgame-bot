@@ -31,9 +31,7 @@ class InvalidDay(ParsingError):
 
     def __post_init__(self) -> None:
         if self.valid_days is not None:
-            self.message = (
-                f"Day - {self.day} - is not in valid puzzle days: {self.valid_days}"
-            )
+            self.message = f"Day - {self.day} - is not in valid puzzle days: {self.valid_days}"
         else:
             self.message = f"Invalid day provided: {self.day}"
         super().__init__(self.message)
