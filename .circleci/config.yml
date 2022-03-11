@@ -48,7 +48,7 @@ jobs:
       - run:
           name: Running lints
           command: |
-            poetry run mypy -p home_server --install-types --non-interactive --namespace-packages --ignore-missing-imports
+            poetry run mypy -p wordgame_bot --install-types --non-interactive --namespace-packages --ignore-missing-imports
             poetry run flake8
             poetry run black --check .
             poetry run isort --check-only .

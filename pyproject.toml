@@ -29,7 +29,7 @@ testpaths = [
 
 [tool.coverage.run]
 branch = true
-source = ["home_server"]
+source = ["wordgame_bot"]
 
 [tool.coverage.report]
 show_missing = true
