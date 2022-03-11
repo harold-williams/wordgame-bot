@@ -5,6 +5,7 @@ repos:
     -   id: trailing-whitespace
     -   id: check-ast
     -   id: end-of-file-fixer
+        exclude: ^tests/test_results/
     -   id: debug-statements
     -   id: check-yaml
     -   id: check-toml
@@ -93,3 +94,14 @@ repos:
     rev: v1.5.7
     hooks:
     -   id: autopep8
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_branch: ''
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: [circle-ci-validator, check-poetry]
+    submodules: false
