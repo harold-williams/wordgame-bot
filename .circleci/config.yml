@@ -48,7 +48,7 @@ jobs:
       - run:
           name: Running lints
           command: |
-            poetry run flake8
+            poetry run flake8 --ignore=E501
             poetry run black --check .
             poetry run isort --check-only .
 
