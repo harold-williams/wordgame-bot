@@ -1,22 +1,22 @@
 from __future__ import annotations
 
+import os
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
-import os
 from typing import Tuple
 
+import psycopg2
 # from dotenv import load_dotenv
 from discord import Colour, Embed, User
-import psycopg2
+
 from wordgame_bot.attempt import Attempt
 from wordgame_bot.league import League
-
 from wordgame_bot.quordle import QuordleAttempt
 from wordgame_bot.wordle import WordleAttempt
 
 # load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv("DATABASE_URL")
 CREATE_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS attempts (
     user_id BIGINT,
@@ -81,7 +81,7 @@ class Leaderboard:
                         attempt.info.day,
                         attempt.score,
                         datetime.today(),
-                    )
+                    ),
                 )
                 self.conn.commit()
         except psycopg2.errors.UniqueViolation:
@@ -96,7 +96,7 @@ class Leaderboard:
             else:
                 curs.execute(
                     "INSERT INTO users(user_id, username) VALUES (%s, %s)",
-                    (user.id, user.name)
+                    (user.id, user.name),
                 )
                 self.conn.commit()
         return
@@ -125,30 +125,30 @@ class Leaderboard:
     @staticmethod
     def get_rank_value(rank):
         rank += 1
-        rank_strings = {
-            1: '🥇',
-            2: '🥈',
-            3: '🥉'
-        }
+        rank_strings = {1: "🥇", 2: "🥈", 3: "🥉"}
         return rank_strings.get(rank, str(rank))
 
     def format_leaderboard(self) -> Embed:
         ranks = self.get_ranks_table()
-        embed = Embed(
-            title = "🏆 Leaderboard 🏆",
-            color = Colour.blue()
+        embed = Embed(title="🏆 Leaderboard 🏆", color=Colour.blue())
+        embed.set_author(
+            name="OfficialStandings",
+            icon_url="https://static.wikia.nocookie.net/spongebob/images/9/96/The_Two_Faces_of_Squidward_174.png/revision/latest?cb=20200923005328",
         )
-        embed.set_author(name="OfficialStandings", icon_url="https://static.wikia.nocookie.net/spongebob/images/9/96/The_Two_Faces_of_Squidward_174.png/revision/latest?cb=20200923005328")
-        embed.set_thumbnail(url="https://images.cdn.circlesix.co/image/2/1200/700/5/uploads/articles/podium-2-546b7f7bf3c7b.jpeg")
+        embed.set_thumbnail(
+            url="https://images.cdn.circlesix.co/image/2/1200/700/5/uploads/articles/podium-2-546b7f7bf3c7b.jpeg",
+        )
         embed.add_field(name="Ranks", value=ranks, inline=False)
-        embed.set_footer(text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html")
+        embed.set_footer(
+            text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html",
+        )
         return embed
 
 
 @contextmanager
 def connect_to_leaderboard() -> Leaderboard:
     try:
-        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         yield (League(conn), Leaderboard(conn))
     finally:
         conn.close()

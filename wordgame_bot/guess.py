@@ -3,11 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
 from datetime import date
-from distutils.log import info
 
 from wordgame_bot.exceptions import InvalidDay, InvalidTiles
 
-COMPLETED_TILES = ('🟩🟩🟩🟩🟩', '⬜⬜⬜⬜⬜', '⬛⬛⬛⬛⬛')
+COMPLETED_TILES = ("🟩🟩🟩🟩🟩", "⬜⬜⬜⬜⬜", "⬛⬛⬛⬛⬛")
 
 
 @dataclass
@@ -36,7 +35,7 @@ class GuessInfo(ABC):
         self.day = self.parse_day()
         self.score = self.parse_score()
 
-    def validate_day(self):
+    def validate_day(self) -> None:
         try:
             day = int(self.day)
             if day not in self.valid_puzzle_days:
@@ -69,7 +68,7 @@ class Guesses:
     @property
     def correct_guess(self):
         try:
-            return self.guesses.index('🟩🟩🟩🟩🟩') + 1
+            return self.guesses.index("🟩🟩🟩🟩🟩") + 1
         except ValueError:
             return self.incorrect_guess_score
 
@@ -80,6 +79,6 @@ class Guesses:
     @staticmethod
     def validate_guess(guess):
         valid_amount_of_tiles = len(guess) == 5
-        valid_tiles = all(tile in '🟨🟩⬜⬛' for tile in guess)
+        valid_tiles = all(tile in "🟨🟩⬜⬛" for tile in guess)
         if not (valid_amount_of_tiles and valid_tiles):
             raise InvalidTiles(guess)

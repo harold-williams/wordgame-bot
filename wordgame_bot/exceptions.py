@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 
 class ParsingError(Exception):
-
     def __init__(self, message: str, *args: object) -> None:
         self.message = message
         super().__init__(message, *args)
@@ -13,7 +12,7 @@ class ParsingError(Exception):
         return str(self.message)
 
     def __repr__(self) -> str:
-        return str(self.message) # TODO - Improve repr format
+        return str(self.message)  # TODO - Improve repr format
 
 
 @dataclass
@@ -31,8 +30,10 @@ class InvalidDay(ParsingError):
     valid_days: tuple[int, int] | None = None
 
     def __post_init__(self) -> None:
-        if self.valid_days is not None: 
-            self.message = f"Day - {self.day} - is not in valid puzzle days: {self.valid_days}"
+        if self.valid_days is not None:
+            self.message = (
+                f"Day - {self.day} - is not in valid puzzle days: {self.valid_days}"
+            )
         else:
             self.message = f"Invalid day provided: {self.day}"
         super().__init__(self.message)
@@ -40,7 +41,7 @@ class InvalidDay(ParsingError):
 
 @dataclass
 class InvalidScore(ParsingError):
-    score: str
+    score: int | None
 
     def __post_init__(self) -> None:
         self.message = f"Invalid score provided: {self.score}"
@@ -50,7 +51,7 @@ class InvalidScore(ParsingError):
 @dataclass
 class InvalidFormatError(ParsingError):
     user_input: str
-    
+
     def __post_init__(self) -> None:
         self.message = f"User input incorrectly formatted: {self.user_input}"
         super().__init__(self.message)

@@ -1,12 +1,20 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import re
+from contextlib import contextmanager
 from unittest.mock import patch
+
 import pytest
 from freezegun import freeze_time
-from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore
-from wordgame_bot.octordle import OctordleAttempt, OctordleAttemptParser, OctordleGuessInfo
+
+from wordgame_bot.exceptions import (
+    InvalidDay, InvalidFormatError,
+    InvalidScore,
+)
+from wordgame_bot.octordle import (
+    OctordleAttempt, OctordleAttemptParser,
+    OctordleGuessInfo,
+)
 
 YESTERDAY_SUBMISSION = (
     "Daily Octordle #42\n"
@@ -107,10 +115,12 @@ TODAY_SUBMISSION = (
     "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩"
 )
 
+
 @contextmanager
 def remove_info_validation():
-    with patch('wordgame_bot.octordle.OctordleGuessInfo.__post_init__'):
+    with patch("wordgame_bot.octordle.OctordleGuessInfo.__post_init__"):
         yield
+
 
 @freeze_time("2022, 3, 8")
 @pytest.mark.parametrize(
@@ -126,7 +136,7 @@ def remove_info_validation():
             42,
             76,
         ),
-    ]
+    ],
 )
 def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
     parser = OctordleAttemptParser(attempt)
@@ -135,12 +145,14 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
     assert parsed_attempt.info.day == expected_day
     assert parsed_attempt.score == expected_score
 
+
 def replace_day(submission: str, new_day: str):
     return re.sub("#[0-9]+\n", f"#{new_day}\n", submission)
 
+
 def replace_score(submission: str, new_scores: str):
     submission_lines = submission.split("\n")
-    valid_tiles = ("🟩🟨⬜⬛")
+    valid_tiles = "🟩🟨⬜⬛"
     new_submission = submission_lines[0:1] + new_scores
     for line_num, line in enumerate(submission_lines[1:]):
         if any(tile in line for tile in valid_tiles):
@@ -148,39 +160,36 @@ def replace_score(submission: str, new_scores: str):
     new_submission += submission_lines[line_num:]
     return "\n".join(new_submission)
 
+
 @freeze_time("2022, 3, 8")
 @pytest.mark.parametrize(
     "attempt, expected_error",
     [
-        (
-            replace_day(TODAY_SUBMISSION, 5),
-            InvalidDay
-        ),
+        (replace_day(TODAY_SUBMISSION, 5), InvalidDay),
         (
             replace_score(TODAY_SUBMISSION, ["5️⃣6️⃣", "8️⃣7️⃣", "🟥🟥", "🟥🟥"]),
             InvalidScore,
         ),
         (
-            replace_score(TODAY_SUBMISSION, ["6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣"]),
+            replace_score(TODAY_SUBMISSION, [
+                          "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣", "6️⃣6️⃣"]),
             InvalidScore,
         ),
         (
             replace_score(TODAY_SUBMISSION, ["6️⃣6️⃣6️⃣6️⃣6️⃣6️⃣6️⃣6️⃣"]),
-            InvalidFormatError
+            InvalidFormatError,
         ),
-        (
-            TODAY_SUBMISSION[:40],
-            InvalidFormatError
-        ),
-    ]
+        (TODAY_SUBMISSION[:40], InvalidFormatError),
+    ],
 )
 def test_parse_invalid_attempts(attempt: str, expected_error: Exception):
     parser = OctordleAttemptParser(attempt)
     with pytest.raises(expected_error):
         parser.parse()
 
+
 @pytest.mark.parametrize(
-"scores, expected_score",
+    "scores, expected_score",
     [
         (["8", "2", "4", "7", "3", "6", "9", "1"], 39),
         (["🔟", "2", "🕐", "7", "🕚", "6", "🕛", "1"], 61),
@@ -188,7 +197,7 @@ def test_parse_invalid_attempts(attempt: str, expected_error: Exception):
         (["3", "2", "🔟"], None),
         (["1", "1", "1", "1", "1", "1", "1", "1"], None),
         (["a", "b", "c", "d", "X", "X", "X", "X"], None),
-    ]
+    ],
 )
 def test_parse_score(scores: list[str], expected_score: int | None):
     with remove_info_validation():

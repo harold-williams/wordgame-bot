@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 from datetime import date
-import re
 
 from wordgame_bot.attempt import Attempt, AttemptParser
-from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
-from wordgame_bot.guess import GuessInfo, Guesses
+from wordgame_bot.exceptions import (
+    InvalidDay, InvalidFormatError,
+    InvalidScore, ParsingError,
+)
+from wordgame_bot.guess import Guesses, GuessInfo
 
 INCORRECT_GUESS_SCORE = 8
+
 
 @dataclass
 class WordleAttemptParser(AttemptParser):
     attempt: str
-    error: str = "" # TODO
+    error: str = ""  # TODO
 
     def parse(self) -> WordleAttempt:
         try:
@@ -22,16 +26,19 @@ class WordleAttemptParser(AttemptParser):
         except ParsingError as e:
             self.handle_error(e)
 
-    def parse_attempt(self):
+    def parse_attempt(self) -> WordleAttempt:
         lines = self.get_lines()
         info = WordleGuessInfo(lines[0])
         guesses = Guesses(lines[1:], INCORRECT_GUESS_SCORE)
         if info.score != guesses.correct_guess:
-            raise InvalidScore(info.score) # TODO This should be moved inside attempt as not a parsing error is an attempt error.
+            raise InvalidScore(
+                info.score,
+            )  # TODO This should be moved inside attempt as not a parsing error is an attempt error.
         return WordleAttempt(info, guesses)
 
-    def get_lines(self):
-        lines = [line.strip() for line in self.attempt.split("\n") if line.strip()]
+    def get_lines(self) -> list[str]:
+        lines = [line.strip()
+                 for line in self.attempt.split("\n") if line.strip()]
         if len(lines) <= 1 or len(lines) > 7:
             raise InvalidFormatError(self.attempt)
         return lines
@@ -53,15 +60,15 @@ class WordleGuessInfo(GuessInfo):
             raise InvalidFormatError(self.info)
 
     def extract_day_and_score(self):
-        info_parts = self.info.split(' ')
+        info_parts = self.info.split(" ")
         self.day = info_parts[1]
-        self.score = info_parts[2].split('/')[0]
+        self.score = info_parts[2].split("/")[0]
 
-    def parse_day(self):
+    def parse_day(self) -> int:
         self.validate_day()
         return int(self.day)
 
-    def parse_score(self):
+    def parse_score(self) -> int:
         self.validate_score()
         if self.score == "X":
             return INCORRECT_GUESS_SCORE
@@ -71,7 +78,7 @@ class WordleGuessInfo(GuessInfo):
     def validate_score(self):
         try:
             assert len(self.score) == 1
-            assert self.score in '123456X'
+            assert self.score in "123456X"
         except AssertionError:
             raise InvalidScore(self.score)
 

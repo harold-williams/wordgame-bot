@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -27,6 +27,7 @@ def test_get_today_scores():
         "susan": 23,
     }
 
+
 @pytest.mark.parametrize(
     "todays_date, expected_start",
     [
@@ -34,12 +35,13 @@ def test_get_today_scores():
         (date(2022, 3, 13), date(2022, 3, 7)),
         (date(2022, 3, 21), date(2022, 3, 21)),
         (date(2022, 1, 1), date(2021, 12, 27)),
-    ]
+    ],
 )
 def test_league_start_day(todays_date: date, expected_start: date):
     league = League(MagicMock())
     with freeze_time(todays_date):
         assert league.start_day == expected_start
+
 
 def test_get_league_scores():
     league = League(MagicMock())
@@ -69,6 +71,7 @@ def test_get_league_scores():
         "susan": {date(2022, 3, 8): 23},
     }
 
+
 def test_get_league_table():
     league = League(MagicMock())
     mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
@@ -97,6 +100,7 @@ def test_get_league_table():
         "susan": {date(2022, 3, 8): 23},
     }
 
+
 def test_get_latest_league_ranks():
     league = League(MagicMock())
     league.table = {
@@ -120,7 +124,8 @@ def test_get_latest_league_ranks():
         "jenny": (4, 6),
     }
 
-@freeze_time(datetime(2022,3,11))
+
+@freeze_time(datetime(2022, 3, 11))
 def test_get_previous_league_ranks():
     league = League(MagicMock())
     league.table = {
@@ -144,7 +149,8 @@ def test_get_previous_league_ranks():
         "jenny": (4, 6),
     }
 
-@freeze_time(datetime(2022,3,11))
+
+@freeze_time(datetime(2022, 3, 11))
 def test_get_previous_league_ranks():
     league = League(MagicMock())
     league.table = {
@@ -160,7 +166,8 @@ def test_get_previous_league_ranks():
     ranks = league.get_previous_league_ranks()
     assert ranks == {}
 
-@freeze_time(datetime(2022,3,11))
+
+@freeze_time(datetime(2022, 3, 11))
 def test_get_league_info():
     league = League(MagicMock())
     league.table = {
@@ -184,7 +191,8 @@ def test_get_league_info():
         "jenny": (4, 0, 6),
     }
 
-@freeze_time(datetime(2022,3,11))
+
+@freeze_time(datetime(2022, 3, 11))
 def test_get_league_info_with_new_entry():
     league = League(MagicMock())
     league.table = {
@@ -217,6 +225,7 @@ def test_get_league_info_with_new_entry():
         else:
             assert expected[user][1] == info[user][1]
         assert expected[user][2] == info[user][2]
+
 
 def test_get_ranks_table():
     league = League(MagicMock())

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import random
+from dataclasses import dataclass, field
+
 from discord import Colour, Embed, User
+
 from wordgame_bot.attempt import Attempt
 
 SUCCESS_THUMBNAILS = (
@@ -32,12 +34,15 @@ WORDGAME_LINKS = (
 )
 
 
+@dataclass
 class MessageCreator:
+    threshold: int
+    title: str
+    colour: Colour
+    author: dict[str, str]
+
     def create_embed(self, attempt: Attempt, user: User) -> Embed:
-        w_embed = Embed(
-            title = self.title,
-            color = self.colour
-        )
+        w_embed = Embed(title=self.title, color=self.colour)
         w_embed.set_author(**self.author)
         if attempt.score > self.threshold:
             thumbnail = get_congratulations_thumbnail()
@@ -55,10 +60,12 @@ class QuordleMessage(MessageCreator):
     threshold: int = 25
     title: str = "🧠 Quordle Submission 🧠"
     colour: Colour = Colour.gold()
-    author: dict[str, str] = field(default_factory=lambda: {
-        "name" : "QuordleParser",
-        "icon_url" : "https://styles.redditmedia.com/t5_5sz4bw/styles/communityIcon_3qy4mer1lqh81.png?width=256&s=b5f57f27a5c13170505365a686fca349a0cb368f"
-    })
+    author: dict[str, str] = field(
+        default_factory=lambda: {
+            "name": "QuordleParser",
+            "icon_url": "https://styles.redditmedia.com/t5_5sz4bw/styles/communityIcon_3qy4mer1lqh81.png?width=256&s=b5f57f27a5c13170505365a686fca349a0cb368f",
+        },
+    )
 
 
 @dataclass
@@ -66,10 +73,12 @@ class WordleMessage(MessageCreator):
     threshold: int = 6
     title: str = "🤠 Wordle Submission 🤠"
     colour: Colour = Colour.dark_red()
-    author: dict[str, str] = field(default_factory=lambda: {
-        "name" : "WordleParser",
-        "icon_url" : "https://play-lh.googleusercontent.com/jQXwLdYhmDdd5mISOcRkaU0Q7rwm4Yphc6YmJgeBzLe_IrZ5IVNX4WoIGtZL8k6G5Q=w256"
-    })
+    author: dict[str, str] = field(
+        default_factory=lambda: {
+            "name": "WordleParser",
+            "icon_url": "https://play-lh.googleusercontent.com/jQXwLdYhmDdd5mISOcRkaU0Q7rwm4Yphc6YmJgeBzLe_IrZ5IVNX4WoIGtZL8k6G5Q=w256",
+        },
+    )
 
 
 @dataclass
@@ -77,14 +86,17 @@ class OctordleMessage(MessageCreator):
     threshold: int = 51
     title: str = "🤓 Octordle Submission 🤓"
     colour: Colour = Colour.green()
-    author: dict[str, str] = field(default_factory=lambda: {
-        "name" : "OctordleParser",
-        "icon_url" : "https://www.egames.news/__export/1645898819912/sites/debate/img/2022/02/26/octopsycho.jpg_415429280.jpg"
-    })
+    author: dict[str, str] = field(
+        default_factory=lambda: {
+            "name": "OctordleParser",
+            "icon_url": "https://www.egames.news/__export/1645898819912/sites/debate/img/2022/02/26/octopsycho.jpg_415429280.jpg",
+        },
+    )
 
 
 def get_congratulations_thumbnail():
     return random.choice(SUCCESS_THUMBNAILS)
+
 
 def get_failure_thumbnail():
     return random.choice(FAILURE_THUMBNAILS)

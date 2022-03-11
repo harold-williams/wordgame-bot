@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass, field
 from datetime import date
-import re
 
 from wordgame_bot.attempt import Attempt, AttemptParser
-from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore, ParsingError
-from wordgame_bot.guess import GuessInfo, Guesses
+from wordgame_bot.exceptions import (
+    InvalidDay, InvalidFormatError,
+    InvalidScore, ParsingError,
+)
+from wordgame_bot.guess import Guesses, GuessInfo
 
 INCORRECT_GUESS_SCORE = 12
+
 
 @dataclass
 class QuordleAttemptParser(AttemptParser):
     attempt: str
-    error: str = "" # TODO
+    error: str = ""  # TODO
 
     def parse(self) -> QuordleAttempt:
         try:
@@ -22,16 +26,18 @@ class QuordleAttemptParser(AttemptParser):
         except ParsingError as e:
             self.handle_error(e)
 
-    def parse_attempt(self):
+    def parse_attempt(self) -> QuordleAttempt:
         lines = self.get_lines()
         info = QuordleGuessInfo("\n".join(lines[0:3]))
         words = self.extract_words(lines[3:])
         for word_num, word in enumerate(words):
             if info.scores[word_num] != word.correct_guess:
-                raise InvalidScore(info.score) # TODO This should be moved inside attempt as not a parsing error is an attempt error.
+                raise InvalidScore(
+                    info.score,
+                )  # TODO This should be moved inside attempt as not a parsing error is an attempt error.
         return QuordleAttempt(info, words)
 
-    def get_lines(self):
+    def get_lines(self) -> list[str]:
         lines = [line.strip() for line in self.attempt.split("\n")]
         if "quordle.com" in lines:
             lines.remove("quordle.com")
@@ -67,12 +73,15 @@ class QuordleAttemptParser(AttemptParser):
 class QuordleGuessInfo(GuessInfo):
     scores: list = field(default_factory=list)
     creation_day: date = date(2022, 1, 24)
-    valid_format = re.compile("^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$")
+    valid_format = re.compile(
+        "^Daily Quordle #[0-9]+\n[1-9🟥][1-9🟥]\n[1-9🟥][1-9🟥]$")
 
     @property
     def bonus_points(self):
-        all_correct = all(score != '🟥' for score in self.scores)
-        return -1 if all_correct else 0 # TODO THIS SHOULD BE MOVED TO QUORDLE ATTEMPT AS OTHERWISE INVERSION + WHY IT IS HERE IS CONFUSING
+        all_correct = all(score != "🟥" for score in self.scores)
+        return (
+            -1 if all_correct else 0
+        )  # TODO THIS SHOULD BE MOVED TO QUORDLE ATTEMPT AS OTHERWISE INVERSION + WHY IT IS HERE IS CONFUSING
 
     def validate_format(self):
         self.sanitise_info()
@@ -81,12 +90,12 @@ class QuordleGuessInfo(GuessInfo):
 
     def sanitise_info(self):
         self.info = self.info.strip()
-        for bad_char in ('\ufe0f', '\u20e3'):
-            self.info = self.info.replace(bad_char, '')
+        for bad_char in ("\ufe0f", "\u20e3"):
+            self.info = self.info.replace(bad_char, "")
 
     def extract_day_and_score(self):
-        info_parts = self.info.split('\n')
-        self.day = info_parts[0].split('#')[1]
+        info_parts = self.info.split("\n")
+        self.day = info_parts[0].split("#")[1]
         self.scores = list("".join(info_parts[1:]))
 
     def parse_day(self):

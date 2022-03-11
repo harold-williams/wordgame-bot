@@ -2,15 +2,25 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from unittest.mock import patch
-from freezegun import freeze_time
+
 import pytest
-from wordgame_bot.exceptions import InvalidDay, InvalidFormatError, InvalidScore
-from wordgame_bot.quordle import INCORRECT_GUESS_SCORE, QuordleAttempt, QuordleGuessInfo, QuordleAttemptParser
+from freezegun import freeze_time
+
+from wordgame_bot.exceptions import (
+    InvalidDay, InvalidFormatError,
+    InvalidScore,
+)
+from wordgame_bot.quordle import (
+    INCORRECT_GUESS_SCORE, QuordleAttempt,
+    QuordleAttemptParser, QuordleGuessInfo,
+)
+
 
 @contextmanager
 def remove_info_validation():
-    with patch('wordgame_bot.quordle.QuordleGuessInfo.__post_init__'):
+    with patch("wordgame_bot.quordle.QuordleGuessInfo.__post_init__"):
         yield
+
 
 @freeze_time("2022, 2, 10")
 @pytest.mark.parametrize(
@@ -98,7 +108,7 @@ def remove_info_validation():
             17,
             22,
         ),
-    ]
+    ],
 )
 def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: int):
     parser = QuordleAttemptParser(attempt)
@@ -106,6 +116,7 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
     assert isinstance(parsed_attempt, QuordleAttempt)
     assert parsed_attempt.info.day == expected_day
     assert parsed_attempt.score == expected_score
+
 
 @freeze_time("2022, 2, 10")
 @pytest.mark.parametrize(
@@ -133,7 +144,7 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
                 "⬜⬜🟨⬜⬜ 🟩🟩🟩🟩🟩\n"
                 "🟩🟩🟩🟩🟩 ⬛⬛⬛⬛⬛"
             ),
-            InvalidDay
+            InvalidDay,
         ),
         (
             (
@@ -161,7 +172,7 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
                 "⬜⬜⬜🟨⬜ 🟩🟩🟩🟩🟩\n"
                 "⬜⬜🟩⬜⬜ ⬛⬛⬛⬛⬛"
             ),
-            InvalidScore
+            InvalidScore,
         ),
         (
             (
@@ -189,7 +200,7 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
                 "⬜⬜⬜🟨⬜ 🟩🟩🟩🟩🟩\n"
                 "⬜⬜🟩⬜⬜ ⬛⬛⬛⬛⬛"
             ),
-            InvalidScore
+            InvalidScore,
         ),
         (
             (
@@ -214,22 +225,16 @@ def test_parse_valid_attempts(attempt: str, expected_score: int, expected_day: i
                 "⬛⬛⬛⬛⬛ ⬜🟩⬜🟩🟩\n"
                 "⬛⬛⬛⬛⬛ 🟩🟩🟩🟩🟩"
             ),
-            InvalidFormatError
+            InvalidFormatError,
         ),
-        (
-            (
-                "Daily Quordle #17\n"
-                "5️⃣6️⃣\n"
-                "8️⃣7️⃣\n"
-            ),
-            InvalidFormatError
-        ),
-    ]
+        (("Daily Quordle #17\n" "5️⃣6️⃣\n" "8️⃣7️⃣\n"), InvalidFormatError),
+    ],
 )
 def test_parse_invalid_attempts(attempt: str, expected_error: Exception):
     parser = QuordleAttemptParser(attempt)
     with pytest.raises(expected_error):
         parser.parse()
+
 
 @freeze_time("2022, 2, 10")
 @pytest.mark.parametrize(
@@ -240,7 +245,7 @@ def test_parse_invalid_attempts(attempt: str, expected_error: Exception):
         ("0", None),
         ("140", None),
         ("1st Feb", None),
-    ]
+    ],
 )
 def test_parse_day(day: str, expected_day: int | None):
     with remove_info_validation():
@@ -250,16 +255,17 @@ def test_parse_day(day: str, expected_day: int | None):
         except InvalidDay:
             assert expected_day is None
 
+
 @pytest.mark.parametrize(
-"scores, expected_score",
+    "scores, expected_score",
     [
         (["8", "2", "4", "7"], 20),
         (["6", "3", "5", "7"], 20),
         (["🟥", "2", "4", "7"], 24),
         (["3", "2"], None),
-        (["1","1","1","1"], None),
+        (["1", "1", "1", "1"], None),
         (["X", "X", "X", "X"], None),
-    ]
+    ],
 )
 def test_parse_score(scores: list[str], expected_score: int | None):
     with remove_info_validation():
