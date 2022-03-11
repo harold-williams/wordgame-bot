@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Generator
-from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
-import psycopg2
 from discord import Color, Embed
+
+from wordgame_bot.db import DBConnection
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -58,7 +57,7 @@ class NewEntry:
 
 @dataclass
 class League:
-    conn: psycopg2.connection
+    db: DBConnection
     League_length: timedelta = timedelta(days=7)
     scores: dict[int, int] = field(default_factory=dict)
     table: dict[str, dict[datetime, int]] = field(default_factory=dict)
@@ -75,21 +74,19 @@ class League:
 
     def get_today_scores(self):
         self.scores = {}
-        with self.get_cursor() as curs:
+        with self.db.get_cursor() as curs:
             curs.execute(SCORES, (datetime.today(),))
             retrieved_scores = curs.fetchall()
             for (user_id, score) in retrieved_scores:
                 self.scores[user_id] = score
-            self.conn.commit()
 
     def get_league_scores(self):
         self.table = {}
-        with self.get_cursor() as curs:
+        with self.db.get_cursor() as curs:
             curs.execute(LEAGUE_TABLE, (self.start_day,))
             retrieved_scores = curs.fetchall()
             for (user_id, day, score) in retrieved_scores:
                 self.table.setdefault(user_id, {})[day] = score
-            self.conn.commit()
 
     def get_latest_league_ranks(self):
         ranks = [
@@ -121,11 +118,6 @@ class League:
             for rank, (user, score) in enumerate(ranks)
             if score != 0
         }
-
-    @contextmanager
-    def get_cursor(self) -> Generator[psycopg2.cursor]:
-        with self.conn.cursor() as cursor:
-            yield cursor
 
     def get_league_info(self):
         previous_ranks = self.get_previous_league_ranks()
@@ -166,7 +158,7 @@ class League:
 
     def format_league(self, ranks) -> Embed:
         rank_table = self.get_ranks_table(ranks)
-        embed = Embed(title="🏆🏆🏆 League 🏆🏆🏆\n", color=Color.blue())
+        embed = Embed(title="🏆🏆🏆 League 🏆🏆🏆", color=Color.blue())
         embed.set_thumbnail(
             url="https://preview.redd.it/m41lh2t0yvj81.png?auto=webp&s=2b3438c08fc12cdb496a7c5f716533c746932604",
         )
@@ -178,17 +170,8 @@ class League:
         return embed
 
 
-@contextmanager
-def connect_to_league() -> Generator[League]:
-    try:
-        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
-        yield League(conn)
-    finally:
-        conn.close()
-
-
-if __name__ == "__main__":
-    with connect_to_league() as league:
-        league.get_league_scores()
-        info = league.get_league_info()
-        print(league.get_ranks_table(info))
+if __name__ == "__main__":  # pragma: no cover
+    league = League(DBConnection())
+    league.get_league_scores()
+    info = league.get_league_info()
+    print(league.get_ranks_table(info))

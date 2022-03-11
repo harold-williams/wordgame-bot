@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import date, datetime
 from unittest.mock import MagicMock
 
@@ -7,11 +8,13 @@ from freezegun import freeze_time
 from wordgame_bot.league import League, NewEntry
 
 
+def mock_cursor(league: League) -> MagicMock:
+    return league.db.get_cursor.return_value.__enter__.return_value
+
+
 def test_get_today_scores():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = (
-        league.conn.cursor.return_value.__enter__.return_value
-    )
+    mocked_cursor = mock_cursor(league)
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", 5),
@@ -47,9 +50,7 @@ def test_league_start_day(todays_date: date, expected_start: date):
 
 def test_get_league_scores():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = (
-        league.conn.cursor.return_value.__enter__.return_value
-    )
+    mocked_cursor = mock_cursor(league)
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", date(2022, 3, 11), 5),
@@ -78,9 +79,7 @@ def test_get_league_scores():
 
 def test_get_league_table():
     league = League(MagicMock())
-    mocked_cursor: MagicMock = (
-        league.conn.cursor.return_value.__enter__.return_value
-    )
+    mocked_cursor = mock_cursor(league)
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
         ("tom", date(2022, 3, 11), 5),
@@ -250,3 +249,42 @@ def test_get_ranks_table():
         "⏬  4. susan -- 23\n"
         "🔽  5. jenny -- 6"
     )
+
+
+@freeze_time(datetime(2022, 3, 11))
+def test_get_league():
+    league = League(MagicMock())
+    mocked_cursor = mock_cursor(league)
+    fetchall: MagicMock = mocked_cursor.fetchall
+    fetchall.return_value = [
+        ("tom", date(2022, 3, 11), 5),
+        ("graham", date(2022, 3, 11), 31),
+        ("paul", date(2022, 3, 11), 51),
+        ("tom", date(2022, 3, 9), 18),
+        ("paul", date(2022, 3, 9), 16),
+        ("jenny", date(2022, 3, 7), 6),
+        ("tom", date(2022, 3, 7), 1),
+        ("susan", date(2022, 3, 8), 23),
+        ("lorraine", date(2022, 3, 8), 2),
+        ("lorraine", date(2022, 3, 11), 65),
+        ("simon", date(2022, 3, 10), 45),
+        ("simon", date(2022, 3, 11), 27),
+    ]
+    table = league.get_league_table()
+    league_contents = table.to_dict()
+    fields = league_contents.get("fields", [])
+    assert len(fields) == 1
+    assert fields[0] == {
+        "inline": False,
+        "name": "=-------------------------------------------=",
+        "value": (
+            "▶️ 🥇. simon -- 72\n"
+            "🔼 🥈. paul -- 67\n"
+            "⏫ 🥉. lorraine -- 67\n"
+            "🟢  4. graham -- 31\n"
+            "⏬  5. tom -- 24\n"
+            "⏬  6. susan -- 23\n"
+            "⏬  7. jenny -- 6"
+        ),
+    }
+    assert league_contents.get("title", "") == "🏆🏆🏆 League 🏆🏆🏆"
