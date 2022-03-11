@@ -70,9 +70,11 @@ class Leaderboard:
         self.verify_valid_user(user)
         try:
             with self.conn.cursor() as curs:
-                curs.execute("""
-                    INSERT INTO attempts(user_id, mode, day, score, submission_date)
-                    VALUES (%s, %s, %s, %s, %s)""",
+                curs.execute(
+                    (
+                        "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
+                        "VALUES (%s, %s, %s, %s, %s)"
+                    ),
                     (
                         user.id,
                         attempt.gamemode,

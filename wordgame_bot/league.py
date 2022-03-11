@@ -2,7 +2,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import os
 from typing import Generator
 
@@ -65,7 +65,7 @@ class League:
 
     @property
     def start_day(self):
-        today = datetime.today()
+        today = date.today()
         return today - timedelta(days=today.weekday())
 
     def get_league_table(self):
@@ -100,10 +100,11 @@ class League:
         ranks = [
             (
                 username,
-                sum([score for day, score in scores.items() if day != datetime.today().date()])
+                sum([score for day, score in scores.items() if day != date.today()])
             )
             for username, scores in self.table.items()
         ]
+        print(ranks)
         ranks.sort(key=lambda x: x[1], reverse=True)
         return {user: rank + 1 for rank, (user, score) in enumerate(ranks) if score != 0}
 

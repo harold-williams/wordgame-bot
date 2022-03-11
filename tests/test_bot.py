@@ -102,8 +102,12 @@ WORDLE_MESSAGE = (
             "get_leaderboard",
         ),
         (
-            "l",
-            "get_leaderboard",
+            "league",
+            "get_league",
+        ),
+        (
+            "lg",
+            "get_league",
         ),
     ]
 )

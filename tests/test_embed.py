@@ -43,7 +43,7 @@ def test_octordle_embed_good_score(user: User):
     embed = OctordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "OctordleParser"
-    assert embed_values["title"] == "🤓🍏 Octordle Submission 🤓🍏"
+    assert embed_values["title"] == "🤓 Octordle Submission 🤓"
     assert embed_values["thumbnail"]["url"] in SUCCESS_THUMBNAILS
 
 def test_octordle_embed_bad_score(user: User):
@@ -51,5 +51,5 @@ def test_octordle_embed_bad_score(user: User):
     embed = OctordleMessage().create_embed(attempt, user)
     embed_values = embed.to_dict()
     assert embed_values["author"]["name"] == "OctordleParser"
-    assert embed_values["title"] == "🤓🍏 Octordle Submission 🤓🍏"
+    assert embed_values["title"] == "🤓 Octordle Submission 🤓"
     assert embed_values["thumbnail"]["url"] in FAILURE_THUMBNAILS

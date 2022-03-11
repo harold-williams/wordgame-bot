@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -30,13 +30,13 @@ def test_get_today_scores():
 @pytest.mark.parametrize(
     "todays_date, expected_start",
     [
-        (datetime(2022, 3, 9), datetime(2022, 3, 7)),
-        (datetime(2022, 3, 13), datetime(2022, 3, 7)),
-        (datetime(2022, 3, 21), datetime(2022, 3, 21)),
-        (datetime(2022, 1, 1), datetime(2021, 12, 27)),
+        (date(2022, 3, 9), date(2022, 3, 7)),
+        (date(2022, 3, 13), date(2022, 3, 7)),
+        (date(2022, 3, 21), date(2022, 3, 21)),
+        (date(2022, 1, 1), date(2021, 12, 27)),
     ]
 )
-def test_league_start_day(todays_date: datetime, expected_start: datetime):
+def test_league_start_day(todays_date: date, expected_start: date):
     league = League(MagicMock())
     with freeze_time(todays_date):
         assert league.start_day == expected_start
@@ -46,27 +46,27 @@ def test_get_league_scores():
     mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
-        ("tom", datetime(2022, 3, 11), 5),
-        ("paul", datetime(2022, 3, 11), 51),
-        ("tom", datetime(2022, 3, 9), 18),
-        ("paul", datetime(2022, 3, 9), 16),
-        ("jenny", datetime(2022, 3, 7), 6),
-        ("tom", datetime(2022, 3, 7), 1),
-        ("susan", datetime(2022, 3, 8), 23),
+        ("tom", date(2022, 3, 11), 5),
+        ("paul", date(2022, 3, 11), 51),
+        ("tom", date(2022, 3, 9), 18),
+        ("paul", date(2022, 3, 9), 16),
+        ("jenny", date(2022, 3, 7), 6),
+        ("tom", date(2022, 3, 7), 1),
+        ("susan", date(2022, 3, 8), 23),
     ]
     league.get_league_scores()
     assert league.table == {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
     }
 
 def test_get_league_table():
@@ -74,43 +74,43 @@ def test_get_league_table():
     mocked_cursor: MagicMock = league.conn.cursor.return_value.__enter__.return_value
     fetchall: MagicMock = mocked_cursor.fetchall
     fetchall.return_value = [
-        ("tom", datetime(2022, 3, 11), 5),
-        ("paul", datetime(2022, 3, 11), 51),
-        ("tom", datetime(2022, 3, 9), 18),
-        ("paul", datetime(2022, 3, 9), 16),
-        ("jenny", datetime(2022, 3, 7), 6),
-        ("tom", datetime(2022, 3, 7), 1),
-        ("susan", datetime(2022, 3, 8), 23),
+        ("tom", date(2022, 3, 11), 5),
+        ("paul", date(2022, 3, 11), 51),
+        ("tom", date(2022, 3, 9), 18),
+        ("paul", date(2022, 3, 9), 16),
+        ("jenny", date(2022, 3, 7), 6),
+        ("tom", date(2022, 3, 7), 1),
+        ("susan", date(2022, 3, 8), 23),
     ]
     league.get_league_scores()
     assert league.table == {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
     }
 
 def test_get_latest_league_ranks():
     league = League(MagicMock())
     league.table = {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
     }
     ranks = league.get_latest_league_ranks()
     assert ranks == {
@@ -125,16 +125,16 @@ def test_get_previous_league_ranks():
     league = League(MagicMock())
     league.table = {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
     }
     ranks = league.get_previous_league_ranks()
     assert ranks == {
@@ -149,13 +149,13 @@ def test_get_previous_league_ranks():
     league = League(MagicMock())
     league.table = {
         "tom": {
-            datetime(2022, 3, 11): 5,
+            date(2022, 3, 11): 5,
         },
         "paul": {
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 11): 6},
-        "susan": {datetime(2022, 3, 11): 23},
+        "jenny": {date(2022, 3, 11): 6},
+        "susan": {date(2022, 3, 11): 23},
     }
     ranks = league.get_previous_league_ranks()
     assert ranks == {}
@@ -165,16 +165,16 @@ def test_get_league_info():
     league = League(MagicMock())
     league.table = {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
     }
     info = league.get_league_info()
     assert info == {
@@ -189,17 +189,17 @@ def test_get_league_info_with_new_entry():
     league = League(MagicMock())
     league.table = {
         "tom": {
-            datetime(2022, 3, 9): 18,
-            datetime(2022, 3, 11): 5,
-            datetime(2022, 3, 7): 1,
+            date(2022, 3, 9): 18,
+            date(2022, 3, 11): 5,
+            date(2022, 3, 7): 1,
         },
         "paul": {
-            datetime(2022, 3, 9): 16,
-            datetime(2022, 3, 11): 51,
+            date(2022, 3, 9): 16,
+            date(2022, 3, 11): 51,
         },
-        "jenny": {datetime(2022, 3, 7): 6},
-        "susan": {datetime(2022, 3, 8): 23},
-        "graham": {datetime(2022, 3, 11): 31},
+        "jenny": {date(2022, 3, 7): 6},
+        "susan": {date(2022, 3, 8): 23},
+        "graham": {date(2022, 3, 11): 31},
     }
     info = league.get_league_info()
     expected = {

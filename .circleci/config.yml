@@ -1,0 +1,91 @@
+jobs:
+  testing:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - deps-{{ checksum "poetry.lock" }}
+      - run:
+          name: Install dependencies
+          command: poetry install
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+      - run:
+          name: Running tests
+          command: poetry run coverage run -m pytest --junitxml="tests/test_results/result.xml"
+      - store_test_results:
+          path: tests/test_results/
+      - run:
+          name: Getting Test Coverage
+          command: |
+            poetry run coverage report
+            poetry run coverage xml
+            poetry run coverage html
+      - codecov/upload:
+          file: coverage.xml
+          token: CODECOV_TOKEN
+      - store_artifacts:
+          path: coverage_html_report
+  linter:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - deps-{{ checksum "poetry.lock" }}
+      - run:
+          name: Install dependencies
+          command:  poetry install
+      - save_cache:
+          key: deps-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+      - run:
+          name: Running lints
+          command: |
+            poetry run mypy -p home_server --install-types --non-interactive --namespace-packages --ignore-missing-imports
+            poetry run flake8
+            poetry run black --check .
+            poetry run isort --check-only .
+
+orbs:
+  codecov: codecov/codecov@3.2.2
+
+version: 2.1
+
+workflows:
+  main:
+    jobs:
+      - testing:
+          filters:
+            branches:
+              ignore:
+                - /WB-.*/
+                - CI
+      - linter:
+          filters:
+            branches:
+              ignore:
+                - /WB-.*/
+                - CI
+  ci:
+    jobs:
+      - testing:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - /WB-.*/
+                - main
+      - linter:
+          filters:
+            branches:
+              ignore:
+                - develop
+                - /WB-.*/
+                - main

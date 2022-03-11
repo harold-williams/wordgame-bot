@@ -1,10 +1,13 @@
 from __future__ import annotations
+from datetime import date, datetime
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 import psycopg2
 from discord import User
+from freezegun import freeze_time
+
 from wordgame_bot.leaderboard import CREATE_TABLE_SCHEMA, LEADERBOARD_SCHEMA, AttemptDuplication, Leaderboard, Score, connect_to_leaderboard
 from wordgame_bot.octordle import OctordleAttempt
 from wordgame_bot.quordle import QuordleAttempt
@@ -24,10 +27,11 @@ def test_verify_new_user(leaderboard: Leaderboard, user: User):
     leaderboard.verify_valid_user(user)
     fetchone.assert_called_once()
     execute.assert_any_call(
-        f"SELECT * FROM users WHERE user_id = {user.id}"
+        f"SELECT * FROM users WHERE user_id = %s", (user.id,)
     )
     execute.assert_any_call(
-        f"INSERT INTO users(user_id, username) VALUES ({user.id}, {user.name})"
+        f"INSERT INTO users(user_id, username) VALUES (%s, %s)",
+        (user.id, user.name)
     )
 
 def test_verify_preexisting_user(leaderboard: Leaderboard, user: User):
@@ -37,7 +41,7 @@ def test_verify_preexisting_user(leaderboard: Leaderboard, user: User):
     fetchone.return_value = (user.id, user.name)
     leaderboard.verify_valid_user(user)
     execute.assert_called_once_with(
-        f"SELECT * FROM users WHERE user_id = {user.id}"
+        f"SELECT * FROM users WHERE user_id = %s", (user.id,)
     )
     fetchone.assert_called_once()
 
@@ -53,10 +57,10 @@ def test_verify_preexisting_user(leaderboard: Leaderboard, user: User):
 )
 def test_retrieve_scores(leaderboard: Leaderboard, retrieved: list[Score]):
     mocked_cursor: MagicMock = leaderboard.conn.cursor.return_value.__enter__.return_value
-    execute: MagicMock = mocked_cursor.execute
-    execute.return_value = retrieved
+    fetchall: MagicMock = mocked_cursor.fetchall
+    fetchall.return_value = retrieved
     leaderboard.retrieve_scores()
-    execute.assert_called_once_with(LEADERBOARD_SCHEMA)
+    mocked_cursor.execute.assert_called_once_with(LEADERBOARD_SCHEMA)
     assert leaderboard.scores == retrieved
 
 @pytest.mark.parametrize(
@@ -112,6 +116,7 @@ def test_get_leaderboard(leaderboard: Leaderboard):
     }
     assert leaderboard_contents.get("title", "") == "🏆 Leaderboard 🏆"
 
+@freeze_time(datetime(2022,3,11))
 @pytest.mark.parametrize(
     "attempt",
     [
@@ -134,16 +139,15 @@ def test_insert_valid_submission(leaderboard: Leaderboard, user: User, attempt):
     execute: MagicMock = mocked_cursor.execute
     leaderboard.verify_valid_user = MagicMock()
     leaderboard.insert_submission(attempt, user)
+    today = datetime.now()
+    print(today)
     execute.assert_called_once_with(
-        "INSERT INTO attempts(user_id, mode, day, score) "
-        "VALUES ("
-            f"{user.id},"
-            f"{attempt.gamemode},"
-            f"{attempt.info.day},"
-            f"{attempt.score}"
-        ")"
+        "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
+        "VALUES (%s, %s, %s, %s, %s)",
+        (user.id, attempt.gamemode, attempt.info.day, attempt.score, datetime.now()),
     )
 
+@freeze_time(datetime(2022,3,11))
 @pytest.mark.parametrize(
     "attempt",
     [
@@ -168,14 +172,12 @@ def test_insert_invalid_submission(leaderboard: Leaderboard, user: User, attempt
     leaderboard.verify_valid_user = MagicMock()
     with pytest.raises(AttemptDuplication) as duplication_error:
         leaderboard.insert_submission(attempt, user)
+    today = type(datetime.now())
+    print(today)
     execute.assert_called_once_with(
-        "INSERT INTO attempts(user_id, mode, day, score) "
-        "VALUES ("
-            f"{user.id},"
-            f"{attempt.gamemode},"
-            f"{attempt.info.day},"
-            f"{attempt.score}"
-        ")"
+        "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
+        "VALUES (%s, %s, %s, %s, %s)",
+        (user.id, attempt.gamemode, attempt.info.day, attempt.score, datetime.now()),
     )
     assert duplication_error.value.username == user.name
     assert duplication_error.value.day == attempt.info.day
@@ -185,7 +187,7 @@ def test_successful_connect_to_leaderboard(connect: MagicMock):
     mock_conn = MagicMock()
     connect.return_value = mock_conn
 
-    with connect_to_leaderboard() as leaderboard:
+    with connect_to_leaderboard() as (_, leaderboard):
         connect.assert_called_once()
         assert leaderboard.conn == mock_conn
         mock_conn.close.assert_not_called()
