@@ -39,7 +39,7 @@ FROM (
     FROM
         attempts AS a
     WHERE
-        mode != 'O'
+        mode in ('W', 'Q')
         AND submission_date IS NOT NULL
         AND submission_date >= %s
     GROUP BY
