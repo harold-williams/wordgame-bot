@@ -7,10 +7,7 @@ from discord.ext import commands
 from wordgame_bot.attempt import AttemptParser
 from wordgame_bot.db import DBConnection
 from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
-from wordgame_bot.leaderboard import (
-    AttemptDuplication,
-    Leaderboard,
-)
+from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard
 from wordgame_bot.league import League
 from wordgame_bot.octordle import OctordleAttemptParser
 from wordgame_bot.quordle import QuordleAttemptParser

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
 from typing import Generator
+
 from psycopg2 import connect
 from psycopg2._psycopg import connection, cursor
 

@@ -7,8 +7,8 @@ import psycopg2
 import pytest
 from discord import User
 from freezegun import freeze_time
-from wordgame_bot.attempt import Attempt
 
+from wordgame_bot.attempt import Attempt
 from wordgame_bot.leaderboard import (
     CREATE_TABLE_SCHEMA,
     LEADERBOARD_SCHEMA,

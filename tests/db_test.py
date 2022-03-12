@@ -1,6 +1,6 @@
-import pytest
 from unittest.mock import MagicMock, create_autospec, patch
 
+import pytest
 from psycopg2._psycopg import connection
 
 from wordgame_bot.db import DBConnection, NotConnected
