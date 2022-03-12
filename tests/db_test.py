@@ -1,4 +1,3 @@
-
 import pytest
 from unittest.mock import MagicMock, create_autospec, patch
 
@@ -27,13 +26,12 @@ def test_get_cursor(connect: MagicMock):
     connect.return_value = mock_conn
     db = DBConnection()
     with db.connect() as conn:
-        with db.get_cursor() as curs:
+        with db.get_cursor() as _:
             conn.cursor.assert_called_once()
 
 
 def test_get_cursor_not_connected():
     db = DBConnection()
     with pytest.raises(NotConnected):
-        with db.get_cursor() as conn:
+        with db.get_cursor() as _:
             pass
-
