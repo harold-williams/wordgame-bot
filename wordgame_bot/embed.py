@@ -94,6 +94,19 @@ class OctordleMessage(MessageCreator):
     )
 
 
+@dataclass
+class HeardleMessage(MessageCreator):
+    threshold: int = 6
+    title: str = "🔉 Heardle Submission 🔉"
+    colour: Colour = Colour.blurple()
+    author: dict[str, str] = field(
+        default_factory=lambda: {
+            "name": "HeardleParser",
+            "icon_url": "https://static.independent.co.uk/2022/03/05/12/newFile-1.jpg",
+        },
+    )
+
+
 def get_congratulations_thumbnail():
     return random.choice(SUCCESS_THUMBNAILS)
 

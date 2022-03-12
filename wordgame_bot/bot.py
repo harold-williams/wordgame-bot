@@ -6,7 +6,13 @@ from discord.ext import commands
 
 from wordgame_bot.attempt import AttemptParser
 from wordgame_bot.db import DBConnection
-from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
+from wordgame_bot.embed import (
+    HeardleMessage,
+    OctordleMessage,
+    QuordleMessage,
+    WordleMessage,
+)
+from wordgame_bot.heardle import HeardleAttemptParser
 from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard
 from wordgame_bot.league import League
 from wordgame_bot.octordle import OctordleAttemptParser
@@ -24,6 +30,7 @@ class WordgameBot(commands.Bot):
         self.wordle_message: WordleMessage = WordleMessage()
         self.quordle_message: QuordleMessage = QuordleMessage()
         self.octordle_message: OctordleMessage = OctordleMessage()
+        self.heardle_message: HeardleMessage = HeardleMessage()
         super().__init__(command_prefix, description, **options)
 
 
@@ -48,6 +55,8 @@ async def on_message(message: Message):
             embed = await handle_octordle(message)
         elif message.content.startswith("Daily Quordle #"):
             embed = await handle_quordle(message)
+        elif message.content.startswith("#Heardle"):
+            embed = await handle_heardle(message)
         elif message.content.split(" ")[0] in ("leaderboard", "lb"):
             embed = await get_leaderboard(message)
         elif message.content.split(" ")[0] in ("league", "lg"):
@@ -74,6 +83,12 @@ async def handle_octordle(message: Message) -> Embed:
     attempt = OctordleAttemptParser(message.content)
     attempt_details = await submit_attempt(attempt, message)
     return bot.octordle_message.create_embed(attempt_details, message.author)
+
+
+async def handle_heardle(message: Message) -> Embed:
+    attempt = HeardleAttemptParser(message.content)
+    attempt_details = await submit_attempt(attempt, message)
+    return bot.heardle_message.create_embed(attempt_details, message.author)
 
 
 async def submit_attempt(attempt: AttemptParser, message: Message):

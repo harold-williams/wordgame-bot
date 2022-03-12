@@ -39,7 +39,7 @@ class QuordleAttemptParser(AttemptParser):
         return QuordleAttempt(info, words)
 
     def get_lines(self) -> list[str]:
-        lines = [line.strip() for line in self.attempt.split("\n")]
+        lines = [line.strip() for line in self.attempt.strip().split("\n")]
         if "quordle.com" in lines:
             lines.remove("quordle.com")
         if len(lines) <= 9 or len(lines) > 23:

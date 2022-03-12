@@ -60,6 +60,9 @@ class GuessInfo(ABC):
 class Guesses:
     guesses: list[str]
     incorrect_guess_score: int
+    correct_answer: str = "🟩🟩🟩🟩🟩"
+    valid_tiles: str = "🟨🟩⬜⬛"
+    tiles_per_guess: int = 5
 
     def __post_init__(self):
         self.guesses = [guess.strip() for guess in self.guesses]
@@ -68,7 +71,7 @@ class Guesses:
     @property
     def correct_guess(self):
         try:
-            return self.guesses.index("🟩🟩🟩🟩🟩") + 1
+            return self.guesses.index(self.correct_answer) + 1
         except ValueError:
             return self.incorrect_guess_score
 
@@ -76,9 +79,8 @@ class Guesses:
         for guess in self.guesses:
             self.validate_guess(guess)
 
-    @staticmethod
-    def validate_guess(guess):
-        valid_amount_of_tiles = len(guess) == 5
-        valid_tiles = all(tile in "🟨🟩⬜⬛" for tile in guess)
+    def validate_guess(self, guess):
+        valid_amount_of_tiles = len(guess) == self.tiles_per_guess
+        valid_tiles = all(tile in self.valid_tiles for tile in guess)
         if not (valid_amount_of_tiles and valid_tiles):
             raise InvalidTiles(guess)

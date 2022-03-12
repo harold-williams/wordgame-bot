@@ -8,7 +8,6 @@ from datetime import date
 from wordgame_bot.attempt import Attempt, AttemptParser
 from wordgame_bot.exceptions import (
     InvalidFormatError,
-    InvalidScore,
     ParsingError,
 )
 from wordgame_bot.guess import Guesses, GuessInfo
@@ -17,25 +16,22 @@ INCORRECT_GUESS_SCORE = 8
 
 
 @dataclass
-class WordleAttemptParser(AttemptParser):
+class HeardleAttemptParser(AttemptParser):
     attempt: str
     error: str = ""  # TODO
 
-    def parse(self) -> WordleAttempt:
+    def parse(self) -> HeardleAttempt:
         try:
             return self.parse_attempt()
         except ParsingError as e:
             self.handle_error(e)
 
-    def parse_attempt(self) -> WordleAttempt:
+    def parse_attempt(self) -> HeardleAttempt:
         lines = self.get_lines()
-        info = WordleGuessInfo(lines[0])
-        guesses = Guesses(lines[1:], INCORRECT_GUESS_SCORE)
-        if info.score != guesses.correct_guess:
-            raise InvalidScore(
-                info.score,
-            )  # TODO This should be moved inside attempt as not a parsing error is an attempt error.
-        return WordleAttempt(info, guesses)
+        info = HeardleGuessInfo(lines[0])
+        guesses = Guesses(lines[1][1:], INCORRECT_GUESS_SCORE, "🟩", "🟩🟥⬜️", 1)
+        info.score = guesses.correct_guess
+        return HeardleAttempt(info, guesses)
 
     def get_lines(self) -> list[str]:
         lines = [
@@ -43,20 +39,20 @@ class WordleAttemptParser(AttemptParser):
             for line in self.attempt.strip().split("\n")
             if line.strip()
         ]
-        if len(lines) <= 1 or len(lines) > 7:
+        if len(lines) <= 1 or len(lines) > 3:
             raise InvalidFormatError(self.attempt)
         return lines
 
     def handle_error(self, error: ParsingError):
         logging.warning(f"{error!r}")
-        self.errorr = str(error.message)
+        self.error = str(error.message)
         raise error
 
 
 @dataclass
-class WordleGuessInfo(GuessInfo):
-    creation_day: date = date(2021, 6, 19)
-    valid_format = re.compile("^Wordle [0-9]+ [1-6X]/6$")
+class HeardleGuessInfo(GuessInfo):
+    creation_day: date = date(2022, 2, 25)
+    valid_format = re.compile("^#Heardle #[0-9]+$")
 
     def validate_format(self):
         self.info = self.info.strip()
@@ -65,34 +61,23 @@ class WordleGuessInfo(GuessInfo):
 
     def extract_day_and_score(self):
         info_parts = self.info.split(" ")
-        self.day = info_parts[1]
-        self.score = info_parts[2].split("/")[0]
+        self.day = info_parts[1][1:]
+        self.score = None
 
     def parse_day(self) -> int:
         self.validate_day()
         return int(self.day)
 
     def parse_score(self) -> int:
-        self.validate_score()
-        if self.score == "X":
-            return INCORRECT_GUESS_SCORE
-
-        return int(self.score)
-
-    def validate_score(self):
-        try:
-            assert len(self.score) == 1
-            assert self.score in "123456X"
-        except AssertionError:
-            raise InvalidScore(self.score)
+        return None
 
 
 @dataclass
-class WordleAttempt(Attempt):
+class HeardleAttempt(Attempt):
     @property
     def maxscore(self):
         return 10
 
     @property
     def gamemode(self):
-        return "W"
+        return "H"
