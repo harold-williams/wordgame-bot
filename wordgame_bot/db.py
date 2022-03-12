@@ -1,8 +1,8 @@
+from collections.abc import Generator
 from __future__ import annotations
 
 import os
 from contextlib import contextmanager
-from typing import Generator
 
 from psycopg2 import connect
 from psycopg2._psycopg import connection, cursor
