@@ -97,6 +97,7 @@ async def get_league(message) -> Embed:
 
 if __name__ == "__main__":  # pragma: no cover
     connection = DBConnection()
-    bot.league = League(connection)
-    bot.leaderboard = Leaderboard(connection)
-    bot.run(TOKEN)
+    with connection.connect():
+        bot.league = League(connection)
+        bot.leaderboard = Leaderboard(connection)
+        bot.run(TOKEN)
