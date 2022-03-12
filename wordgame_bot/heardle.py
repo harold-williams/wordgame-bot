@@ -6,10 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from wordgame_bot.attempt import Attempt, AttemptParser
-from wordgame_bot.exceptions import (
-    InvalidFormatError,
-    ParsingError,
-)
+from wordgame_bot.exceptions import InvalidFormatError, ParsingError
 from wordgame_bot.guess import Guesses, GuessInfo
 
 INCORRECT_GUESS_SCORE = 8
