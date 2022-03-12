@@ -5,12 +5,9 @@ from discord import Embed, Message
 from discord.ext import commands
 
 from wordgame_bot.attempt import AttemptParser
+from wordgame_bot.db import DBConnection
 from wordgame_bot.embed import OctordleMessage, QuordleMessage, WordleMessage
-from wordgame_bot.leaderboard import (
-    AttemptDuplication,
-    Leaderboard,
-    connect_to_leaderboard,
-)
+from wordgame_bot.leaderboard import AttemptDuplication, Leaderboard
 from wordgame_bot.league import League
 from wordgame_bot.octordle import OctordleAttemptParser
 from wordgame_bot.quordle import QuordleAttemptParser
@@ -99,7 +96,7 @@ async def get_league(message) -> Embed:
 
 
 if __name__ == "__main__":  # pragma: no cover
-    with connect_to_leaderboard() as (league, leaderboard):
-        bot.league = league
-        bot.leaderboard = leaderboard
-        bot.run(TOKEN)
+    connection = DBConnection()
+    bot.league = League(connection)
+    bot.leaderboard = Leaderboard(connection)
+    bot.run(TOKEN)

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os
-from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Tuple
 
@@ -10,7 +9,7 @@ import psycopg2
 from discord import Colour, Embed, User
 
 from wordgame_bot.attempt import Attempt
-from wordgame_bot.league import League
+from wordgame_bot.db import DBConnection
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 CREATE_TABLE_SCHEMA = """
@@ -51,21 +50,23 @@ class AttemptDuplication(Exception):
     day: int
 
 
+@dataclass
 class Leaderboard:
-    def __init__(self, conn) -> None:
-        self.conn: psycopg2.connection = conn
-        self.scores: list[Score] = []
+    db: DBConnection
+    scores: list[Score] = field(default_factory=list)
+
+    def __post_init__(self):
         self.create_table()
 
     def create_table(self):
-        with self.conn.cursor() as curs:
+        with self.db.get_cursor() as curs:
             curs.execute(CREATE_TABLE_SCHEMA)
-            self.conn.commit()
+            self.db.commit()
 
     def insert_submission(self, attempt: Attempt, user: User):
         self.verify_valid_user(user)
         try:
-            with self.conn.cursor() as curs:
+            with self.db.get_cursor() as curs:
                 curs.execute(
                     (
                         "INSERT INTO attempts(user_id, mode, day, score, submission_date) "
@@ -79,13 +80,13 @@ class Leaderboard:
                         datetime.today(),
                     ),
                 )
-                self.conn.commit()
+                self.db.commit()
         except psycopg2.errors.UniqueViolation:
-            self.conn.rollback()
+            self.db.rollback()
             raise AttemptDuplication(user.name, attempt.info.day)
 
     def verify_valid_user(self, user: User):
-        with self.conn.cursor() as curs:
+        with self.db.get_cursor() as curs:
             curs.execute("SELECT * FROM users WHERE user_id = %s", (user.id,))
             if curs.fetchone() is not None:
                 return
@@ -94,7 +95,7 @@ class Leaderboard:
                     "INSERT INTO users(user_id, username) VALUES (%s, %s)",
                     (user.id, user.name),
                 )
-                self.conn.commit()
+                self.db.commit()
         return
 
     def get_leaderboard(self):
@@ -103,12 +104,12 @@ class Leaderboard:
 
     def retrieve_scores(self):
         self.scores = []
-        with self.conn.cursor() as curs:
+        with self.db.get_cursor() as curs:
             curs.execute(LEADERBOARD_SCHEMA)
             retrieved_scores = curs.fetchall()
             for score in retrieved_scores:
                 self.scores.append(score)
-            self.conn.commit()
+            self.db.commit()
 
     def get_ranks_table(self):
         self.scores.sort(key=lambda x: x[1], reverse=True)
@@ -139,12 +140,3 @@ class Leaderboard:
             text="Quordle: https://www.quordle.com/#/\nWordle: https://www.nytimes.com/games/wordle/index.html",
         )
         return embed
-
-
-@contextmanager
-def connect_to_leaderboard() -> Leaderboard:
-    try:
-        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
-        yield (League(conn), Leaderboard(conn))
-    finally:
-        conn.close()
