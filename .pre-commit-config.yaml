@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.3.0
     hooks:
     -   id: trailing-whitespace
     -   id: check-ast
@@ -13,11 +13,11 @@ repos:
     -   id: check-merge-conflict
     -   id: name-tests-test
 -   repo: https://github.com/psf/black
-    rev: 21.11b1
+    rev: 22.6.0
     hooks:
     -   id: black
         language_version: python3.8
--   repo: https://gitlab.com/pycqa/flake8
+-   repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
     hooks:
     -   id: flake8
@@ -32,7 +32,7 @@ repos:
 #     hooks:
 #     -   id: python-safety-dependencies-check
 -   repo: https://github.com/jorisroovers/gitlint
-    rev: v0.16.0
+    rev: v0.17.0
     hooks:
     -   id: gitlint
 # -   repo: https://github.com/PyCQA/bandit
@@ -42,11 +42,11 @@ repos:
 #         language_version: python3
 #         exclude: ^tests/
 -   repo: https://github.com/AleksaC/circleci-cli-py
-    rev: v0.1.16277
+    rev: v0.1.20239
     hooks:
     -   id: circle-ci-validator
 -   repo: https://github.com/sondrelg/pep585-upgrade
-    rev: v1.0.1
+    rev: v1.0
     hooks:
     -   id: upgrade-type-hints
         args: [ '--futures=true' ]
@@ -55,20 +55,20 @@ repos:
     hooks:
       - id: auto-smart-commit
 -   repo: https://github.com/hadialqattan/pycln
-    rev: v1.1.0
+    rev: v2.0.4
     hooks:
     -   id: pycln
 -   repo: https://github.com/thibaudcolas/curlylint
-    rev: v0.13.0
+    rev: v0.13.1
     hooks:
     -   id: curlylint
 -   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.0.1
+    rev: v1.3.0
     hooks:
     -   id: detect-secrets
         exclude: 'config.toml|poetry.lock'
 -   repo: https://github.com/myint/docformatter
-    rev: v1.3.1
+    rev: v1.4
     hooks:
     -   id: docformatter
         args: [--in-place]
@@ -81,17 +81,17 @@ repos:
     hooks:
     -   id: check-poetry
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.1
+    rev: v2.37.2
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
 -   repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.2.0
+    rev: v2.2.3
     hooks:
     -   id: add-trailing-comma
         args: [--py36-plus]
 -   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.7
+    rev: v1.6.0
     hooks:
     -   id: autopep8
 ci:
