@@ -26,7 +26,9 @@ class HeardleAttemptParser(AttemptParser):
     def parse_attempt(self) -> HeardleAttempt:
         lines = self.get_lines()
         info = HeardleGuessInfo(lines[0])
-        guesses = Guesses(lines[1][1:], INCORRECT_GUESS_SCORE, "🟩", "🟩🟥⬜️", 1)
+        guesses = Guesses(
+            lines[1][1:], INCORRECT_GUESS_SCORE, "🟩", "🟩🟥⬜️", 1,
+        )
         info.score = guesses.correct_guess
         return HeardleAttempt(info, guesses)
 

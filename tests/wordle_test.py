@@ -217,7 +217,13 @@ def test_wordle_get_lines(number_lines: int, expect_error: bool):
     "attempt, expected_day, expected_score",
     [
         (
-            ("Wordle 5 4/6\n" "⬛⬛⬛🟨⬛\n" "🟨🟨⬛🟩⬛\n" "⬛🟩🟩🟩🟨\n" "🟩🟩🟩🟩🟩\n"),
+            (
+                "Wordle 5 4/6\n"
+                "⬛⬛⬛🟨⬛\n"
+                "🟨🟨⬛🟩⬛\n"
+                "⬛🟩🟩🟩🟨\n"
+                "🟩🟩🟩🟩🟩\n"
+            ),
             5,
             6,
         ),
@@ -285,9 +291,18 @@ def test_parse_valid_attempts(
             ),
             InvalidFormatError,
         ),
-        (("Score: 1000\n" "🟩⬛⬛🟨⬛\n" "🟩🟩⬛🟩🟩\n" "🟩🟩🟩🟩🟩\n"), InvalidFormatError),
         (
-            ("Wordle 8 4/6\n" "⬛⬛⬛🟨⬛\n" "🟨🟨⬛🟩⬛\n" "⬛🟩🟩🟩🟨\n" "🟩🟩🟩🟩🟩\n"),
+            ("Score: 1000\n" "🟩⬛⬛🟨⬛\n" "🟩🟩⬛🟩🟩\n" "🟩🟩🟩🟩🟩\n"),
+            InvalidFormatError,
+        ),
+        (
+            (
+                "Wordle 8 4/6\n"
+                "⬛⬛⬛🟨⬛\n"
+                "🟨🟨⬛🟩⬛\n"
+                "⬛🟩🟩🟩🟨\n"
+                "🟩🟩🟩🟩🟩\n"
+            ),
             InvalidDay,
         ),
         (

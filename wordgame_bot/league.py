@@ -77,7 +77,7 @@ class League:
         with self.db.get_cursor() as curs:
             curs.execute(SCORES, (datetime.today(),))
             retrieved_scores = curs.fetchall()
-            for (user_id, score) in retrieved_scores:
+            for user_id, score in retrieved_scores:
                 self.scores[user_id] = score
 
     def get_league_scores(self):
@@ -85,7 +85,7 @@ class League:
         with self.db.get_cursor() as curs:
             curs.execute(LEAGUE_TABLE, (self.start_day,))
             retrieved_scores = curs.fetchall()
-            for (user_id, day, score) in retrieved_scores:
+            for user_id, day, score in retrieved_scores:
                 self.table.setdefault(user_id, {})[day] = score
 
     def get_latest_league_ranks(self):
