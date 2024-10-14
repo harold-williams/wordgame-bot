@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v5.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: check-ast
@@ -13,17 +13,17 @@ repos:
     -   id: check-merge-conflict
     -   id: name-tests-test
 -   repo: https://github.com/psf/black
-    rev: 21.11b1
+    rev: 24.10.0
     hooks:
     -   id: black
         language_version: python3.8
--   repo: https://gitlab.com/pycqa/flake8
-    rev: 4.0.1
+-   repo: https://github.com/PyCQA/flake8
+    rev: 7.1.1
     hooks:
     -   id: flake8
         args: ['--ignore=E501']
 -   repo: https://github.com/pycqa/isort
-    rev: 5.10.1
+    rev: 5.13.2
     hooks:
     -   id: isort
         name: isort
@@ -32,7 +32,7 @@ repos:
 #     hooks:
 #     -   id: python-safety-dependencies-check
 -   repo: https://github.com/jorisroovers/gitlint
-    rev: v0.16.0
+    rev: v0.19.1
     hooks:
     -   id: gitlint
 # -   repo: https://github.com/PyCQA/bandit
@@ -42,33 +42,33 @@ repos:
 #         language_version: python3
 #         exclude: ^tests/
 -   repo: https://github.com/AleksaC/circleci-cli-py
-    rev: v0.1.16277
+    rev: v0.1.30995
     hooks:
     -   id: circle-ci-validator
 -   repo: https://github.com/sondrelg/pep585-upgrade
-    rev: v1.0.1
+    rev: v1.0
     hooks:
     -   id: upgrade-type-hints
         args: [ '--futures=true' ]
 -   repo: https://github.com/radix-ai/auto-smart-commit
-    rev: v1.0.2
+    rev: v1.0.3
     hooks:
       - id: auto-smart-commit
 -   repo: https://github.com/hadialqattan/pycln
-    rev: v1.1.0
+    rev: v2.4.0
     hooks:
     -   id: pycln
 -   repo: https://github.com/thibaudcolas/curlylint
-    rev: v0.13.0
+    rev: v0.13.1
     hooks:
     -   id: curlylint
 -   repo: https://github.com/Yelp/detect-secrets
-    rev: v1.0.1
+    rev: v1.5.0
     hooks:
     -   id: detect-secrets
         exclude: 'config.toml|poetry.lock'
--   repo: https://github.com/myint/docformatter
-    rev: v1.3.1
+-   repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
     hooks:
     -   id: docformatter
         args: [--in-place]
@@ -81,17 +81,17 @@ repos:
     hooks:
     -   id: check-poetry
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v2.29.1
+    rev: v3.18.0
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
 -   repo: https://github.com/asottile/add-trailing-comma
-    rev: v2.2.0
+    rev: v3.1.0
     hooks:
     -   id: add-trailing-comma
         args: [--py36-plus]
--   repo: https://github.com/pre-commit/mirrors-autopep8
-    rev: v1.5.7
+-   repo: https://github.com/hhatto/autopep8
+    rev: v2.3.1
     hooks:
     -   id: autopep8
 ci:
